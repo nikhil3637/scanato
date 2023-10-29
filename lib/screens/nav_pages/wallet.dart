@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scanato/screens/auth.dart';
-import 'package:scanato/screens/pay.dart';
 import '../balance_history.dart';
 import '../recharge.dart';
 

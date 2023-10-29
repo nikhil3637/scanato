@@ -25,7 +25,7 @@ class _QrcodeGeneratorState extends State<QrcodeGenerator> {
             children: [
               Container(
                 child: QrImageView(
-                  data: 'This is a simple QR code',
+                  data: '01',
                   version: QrVersions.auto,
                   size: 320,
                   gapless: false,

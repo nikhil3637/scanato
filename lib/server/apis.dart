@@ -65,9 +65,7 @@ class ApiServices{
         await prefs.setString('name', responseData['name']);
         await prefs.setString('email', responseData['email']);
         await prefs.setString('mobile', responseData['mobile']);
-        await prefs.setString('referral', responseData['referralCode']);
         print('responseData login page========$responseData');
-        print('referral login page========${responseData['referralCode']}');
         final role = responseData['role'];
         final uniqueId = responseData['id'];
         print('uniqueId = $uniqueId');
@@ -441,6 +439,56 @@ class ApiServices{
     return false;
   }
 
+  Future<bool> PayByUser(amount,uniqueId,machineId,centerId) async {
+    print('rechargeAdmin=======$uniqueId');
+    print('rechargeAdmin=======$amount');
+
+    try {
+      final response = await http.post(
+          Uri.parse('https://vedantifosoft.com/api/Machine'),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(<String ,dynamic>{
+            'machineId': machineId,
+            'centerId': centerId,
+            'amount' : amount,
+            'UserId' : uniqueId,
+            'TimeToOn' : 15
+          }
+          ));
+
+      if (response.statusCode == 200) {
+        // Registration successful, you can process the response here
+        final responseData = response.body;
+        print('Registration Response: ======== $responseData');
+
+        // Show a success dialog using GetX
+        Get.defaultDialog(
+          title: 'Success',
+          middleText: 'Payment done Successfully ',
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+        return true;
+      }
+      else {
+        // Handle errors or non-200 status codes here
+        print('Registration failed with status code ${response.statusCode}');
+      }
+    } catch (error) {
+      // Handle network errors or other exceptions here
+      print('Registration failed with error: $error');
+    }
+    return false;
+  }
+
   Future<bool> addFamilyMember(userId,uniqueId,) async {
     print('rechargeAdmin=======$uniqueId');
     print('rechargeAdmin=======$userId');
@@ -757,7 +805,7 @@ class ApiServices{
         return AnalyticsReport.fromJson(stateData);
       }).toList();
 
-      print('Offerlist================$responseData');
+      print('Report Data================$responseData');
       return Reportlist;
     } else {
       throw Exception('Failed to load state data');
