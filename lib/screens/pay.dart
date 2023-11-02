@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:scanato/server/apis.dart';
 import 'package:http/http.dart' as http;
 
@@ -28,7 +29,7 @@ class _PaymentState extends State<Payment> {
   int? MachineId;
   String? CenterName;
   String? MachineName;
-  bool paymentSuccessful = false; // Add this variable
+  bool paymentSuccessful = false;
 
   @override
   void reassemble() {
@@ -62,7 +63,15 @@ class _PaymentState extends State<Payment> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('QR Code Scanner'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.black),
+        title: Image.asset(
+          'assets/images/robologo.jpg',
+          height: 100,
+          width: 100,
+        ),
       ),
       body: Center(
         child: Column(
@@ -72,90 +81,131 @@ class _PaymentState extends State<Payment> {
             Expanded(
               flex: 5,
               child: showResult
-                  ? Container()
+                  ? _buildPaymentDetails() // Show payment details
                   : QRView(
                 key: qrKey,
                 onQRViewCreated: _onQRViewCreated,
+                overlay: QrScannerOverlayShape(
+                  borderColor: Colors.green,
+                  borderRadius: 10,
+                  borderLength: 30,
+                  borderWidth: 6,
+                  cutOutSize: 300,
+                ),
               ),
             ),
-            if (showResult)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    color: Colors.greenAccent.shade200,
-                    shadowColor: Colors.greenAccent,
-                    elevation: 6,
-                    child: ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text('Balance: ${balance}'),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Center Name: ${CenterName ?? "N/A"}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Machine Name: ${MachineName ?? "N/A"}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Amount: ${amount ?? 0}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  Center(
-                    child: paymentSuccessful
-                        ? ElevatedButton(
-                      onPressed: () {
-                        // Navigate back to the previous screen
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    )
-                        : ElevatedButton(
-                      onPressed: () async {
-                        if (balance != null && amount != null) {
-                          if (balance! >= amount!) {
-                            // Allow the user to pay
-                            bool success = await apiServices.PayByUser(
-                                amount, uniqueId, MachineId, CenterId);
-                            if (success) {
-                              setState(() {
-                                fetchBalance();
-                                paymentSuccessful = true; // Payment successful
-                              });
-                            }
-                          } else {
-                            Get.snackbar(
-                              'Insufficient Balance',
-                              'Your balance is not sufficient for this payment.',
-                            );
-                          }
-                        } else {
-                          // Handle the case where balance or amount is null.
-                          print('Balance or amount is null.');
-                        }
-                      },
-                      child: const Text(
-                        'Pay',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildPaymentDetails() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.45,
+      alignment: Alignment.center,
+      padding: EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Balance: ${balance}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: Colors.black),textAlign: TextAlign.left,),
+          SizedBox(height: 20),
+          _buildCard("Center Name:", CenterName ?? "N/A"),
+          _buildCard("Machine Name:", MachineName ?? "N/A"),
+          _buildCard("Amount:", "${amount ?? 0}"),
+          SizedBox(height: 20),
+          Center(
+            child: paymentSuccessful
+                ? ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Back',
+                style: TextStyle(fontSize: 18),
+              ),
+            )
+                : ElevatedButton(
+              onPressed: () async {
+                if (balance != null && amount != null) {
+                  if (amount! > 0 && balance! >= amount!) {
+                    bool success = await apiServices.PayByUser(amount, uniqueId, MachineId, CenterId);
+                    if (success) {
+                      setState(() {
+                        fetchBalance();
+                        paymentSuccessful = true;
+                      });
+                    }
+                  } else {
+                    if (amount! <= 0) {
+                      Get.snackbar(
+                        'Invalid Amount',
+                        'Amount must be greater than zero for payment.',
+                      );
+                    } else {
+                      Get.snackbar(
+                        'Insufficient Balance',
+                        'Your balance is not sufficient for this payment.',
+                      );
+                    }
+                  }
+                } else {
+                  print('Balance or amount is null.');
+                }
+              },
+              child: const Text(
+                'Pay',
+                style: TextStyle(fontSize: 18),
+              ),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                  EdgeInsets.all(16.0),
+                ),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+              ),
+            )
+
+
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(String title, String content) {
+    return Card(
+      elevation: 6,
+      margin: EdgeInsets.symmetric(vertical: 10),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 5),
+            Text(
+              content,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
@@ -180,18 +230,17 @@ class _PaymentState extends State<Payment> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://124.123.76.123:88/api/Center/GetMachinePlan'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'userId': uniqueId,
-          'machinecode': machineId,
-        }),
-      );
+          Uri.parse('http://124.123.76.123:88/api/Center/GetMachinePlan'),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(<String, dynamic>{
+            'userId': uniqueId,
+            'machinecode': machineId,
+          },
+          ));
 
-      if (response.statusCode == 200) {
-        // Parsing the JSON response
+          if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         final centerName = responseData['data']['center']['name'];
         final centerId = responseData['data']['center']['id'];
@@ -206,33 +255,11 @@ class _PaymentState extends State<Payment> {
           CenterId = centerId;
           MachineId = machineId;
         });
-        print('Center Name: $centerName');
-        print('Machine Name: $machineName');
-        print('Rate: $rateValue');
-
-        // You can use these values as needed in your application
-
-        // Show a success dialog using GetX
-        Get.defaultDialog(
-          title: 'Success',
-          middleText:
-          'Center Name: $centerName\nMachine Name: $machineName\nRate: $rateValue\nMachineId: $MachineId\ncenterId: $CenterId',
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
       } else {
-        // Handle errors or non-200 status codes here
-        print('Registration failed with status code ${response.statusCode}');
-      }
+    print('Registration failed with status code ${response.statusCode}');
+    }
     } catch (error) {
-      // Handle network errors or other exceptions here
-      print('Registration failed with error: $error');
+    print('Registration failed with error: $error');
     }
   }
 }

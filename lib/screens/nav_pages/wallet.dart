@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scanato/screens/auth.dart';
+import 'package:scanato/screens/pay.dart';
 import '../balance_history.dart';
 import '../recharge.dart';
 
@@ -22,6 +23,7 @@ class _WalletState extends State<Wallet> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: 20,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -119,14 +121,22 @@ class _WalletState extends State<Wallet> {
                       ),
                       child: Container(
                         padding: const EdgeInsets.all(16),
-                        child: const Column(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center, // Aligns content vertically
+                          crossAxisAlignment: CrossAxisAlignment.center, // Aligns content horizontally
                           children: [
                             Icon(Icons.wallet, size: 50),
                             SizedBox(height: 10),
-                            Text('Recharge History'),
+                            Text(
+                              'Recharge History',
+                              style: TextStyle(
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ],
                         ),
-                      ),
+                      )
+
                     ),
                   ),
                 ),

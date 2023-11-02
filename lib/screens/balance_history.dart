@@ -15,6 +15,9 @@ class _BalanceHistoryState extends State<BalanceHistory> {
   List<BalanceHis>? _balanceHistoryModel = [];
   final ApiServices apiServices = ApiServices();
   final uniqueId = Get.arguments;
+
+  int itemsToShow = 10;
+
   @override
   void initState() {
     super.initState();
@@ -22,9 +25,19 @@ class _BalanceHistoryState extends State<BalanceHistory> {
   }
 
   Future<void> getBalanceHistoryData(uniqueId) async {
-    List<BalanceHis>? balanceData = await apiServices.fetchBalanceHistoryData(uniqueId);
+    List<BalanceHis>? balanceData =
+    await apiServices.fetchBalanceHistoryData(uniqueId);
     setState(() {
-      _balanceHistoryModel = balanceData;
+      // Filter out transactions with both dr and cr equal to zero
+      _balanceHistoryModel = balanceData
+          ?.where((transaction) => transaction.dr > 0 || transaction.cr > 0)
+          .toList();
+    });
+  }
+
+  void loadMoreItems() {
+    setState(() {
+      itemsToShow += 10;
     });
   }
 
@@ -41,12 +54,30 @@ class _BalanceHistoryState extends State<BalanceHistory> {
         ),
       ),
       body: _balanceHistoryModel != null && _balanceHistoryModel!.isNotEmpty
-          ? ListView.builder(
-        itemCount: _balanceHistoryModel!.length,
-        itemBuilder: (context, index) {
-          final transaction = _balanceHistoryModel![index];
-          return TransactionCard(transaction: transaction);
-        },
+          ? Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: itemsToShow,
+              itemBuilder: (context, index) {
+                if (index == itemsToShow - 1) {
+                  return Column(
+                    children: [
+                      TransactionCard(transaction: _balanceHistoryModel![index]),
+                      if (itemsToShow < _balanceHistoryModel!.length)
+                        ElevatedButton(
+                          onPressed: loadMoreItems,
+                          child: Text('Load More'),
+                        ),
+                    ],
+                  );
+                }
+                final transaction = _balanceHistoryModel![index];
+                return TransactionCard(transaction: transaction);
+              },
+            ),
+          ),
+        ],
       )
           : const Center(
         child: CircularProgressIndicator(),
@@ -55,6 +86,7 @@ class _BalanceHistoryState extends State<BalanceHistory> {
   }
 }
 
+
 class TransactionCard extends StatelessWidget {
   final BalanceHis transaction;
 
@@ -62,26 +94,33 @@ class TransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: ListTile(
-        title: Text(
-          'Transaction No: ${transaction.txNo}',
-          style: TextStyle(fontWeight: FontWeight.bold), // Make the text bold
+    // Check if both dr and cr are greater than zero
+    if (transaction.dr > 0 || transaction.cr > 0) {
+      return Card(
+        margin: EdgeInsets.all(10),
+        child: ListTile(
+          title: Text(
+            'Transaction No: ${transaction.txNo}',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Transaction Date: ${transaction.txDate.toString()}', style: TextStyle(color: Colors.black)),
+              if (transaction.dr > 0) Text('Debit: ${transaction.dr.toString()}', style: TextStyle(color: Colors.black)),
+              if (transaction.cr > 0) Text('Credit: ${transaction.cr.toString()}', style: TextStyle(color: Colors.black)),
+              Text(
+                'Transaction By: ${transaction.txBy.name.toString().split('.').last}',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Transaction Date: ${transaction.txDate.toString()}',style: TextStyle(color: Colors.black)),
-            Text('Debit: ${transaction.dr.toString()}',style: TextStyle(color: Colors.black),),
-            Text('Credit: ${transaction.cr.toString()}',style: TextStyle(color: Colors.black)),
-            Text(
-              'Transaction By: ${transaction.txBy.name.toString().split('.').last}',
-              style: TextStyle(fontWeight: FontWeight.bold), // Make the text bold
-            ),
-          ],
-        ),
-      ),
-    );
+      );
+    } else {
+      // Return an empty container for transactions with both dr and cr equal to zero
+      return Container();
+    }
   }
 }
+

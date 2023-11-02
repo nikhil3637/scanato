@@ -16,7 +16,7 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return TextField(
       controller: controller,
       decoration: InputDecoration(
         hintText: hintText,
@@ -31,8 +31,8 @@ class CustomTextField extends StatelessWidget {
           ),
         ),
       ),
+
       obscureText: obscureText, // Use the specified value
-      validator: validator,
     );
   }
 }
