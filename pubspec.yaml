@@ -44,7 +44,6 @@ dependencies:
   share_plus:
   qr_flutter: ^4.1.0
   qr_code_scanner: ^1.0.1
-  simple_barcode_scanner: ^0.0.8
   flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:

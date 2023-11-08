@@ -41,15 +41,11 @@ class _MyLoginState extends State<MyLogin> {
     });
   }
 
-
-
   void togglePasswordVisibility() {
     setState(() {
       isPasswordVisible = !isPasswordVisible;
     });
   }
-
-
 
   @override
   void initState() {
@@ -121,7 +117,7 @@ class _MyLoginState extends State<MyLogin> {
                             ),
 
                             const SizedBox(
-                              height: 40,
+                              height: 20,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -142,7 +138,7 @@ class _MyLoginState extends State<MyLogin> {
                               ],
                             ),
                             const SizedBox(
-                              height: 40,
+                              height: 20,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -162,22 +158,35 @@ class _MyLoginState extends State<MyLogin> {
                                     ),
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                    'Forgot Password',
-                                    style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      color: Color(0xff4c505b),
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ),
                               ],
                             )
                           ],
                         ),
                       )
+                    ],
+                  ),
+                ),
+
+                // "Powered by" and copyright notice
+                Container(
+                  padding: EdgeInsets.only(top: 20),
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Powered by Vedant Infosoft & Solution PVT LTD',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '© 2023 . All rights reserved.',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),

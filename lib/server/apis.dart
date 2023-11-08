@@ -439,7 +439,7 @@ class ApiServices{
     return false;
   }
 
-  Future<bool> PayByUser(amount,uniqueId,machineId,centerId) async {
+  Future<bool> PayByUser(amount,uniqueId,machineCode,centerId) async {
     print('rechargeAdmin=======$uniqueId');
     print('rechargeAdmin=======$amount');
 
@@ -450,7 +450,7 @@ class ApiServices{
             'Content-Type': 'application/json',
           },
           body: jsonEncode(<String ,dynamic>{
-            'machineId': machineId,
+            'machineId': machineCode,
             'centerId': centerId,
             'amount' : amount,
             'UserId' : uniqueId,

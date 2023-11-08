@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -22,6 +24,7 @@ class _BalanceHistoryState extends State<BalanceHistory> {
   void initState() {
     super.initState();
     getBalanceHistoryData(uniqueId);
+
   }
 
   Future<void> getBalanceHistoryData(uniqueId) async {

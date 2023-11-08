@@ -26,7 +26,7 @@ class _PaymentState extends State<Payment> {
   double? balance;
   int? amount;
   int? CenterId;
-  int? MachineId;
+  String? MachineCode;
   String? CenterName;
   String? MachineName;
   bool paymentSuccessful = false;
@@ -116,61 +116,61 @@ class _PaymentState extends State<Payment> {
           _buildCard("Amount:", "${amount ?? 0}"),
           SizedBox(height: 20),
           Center(
-            child: paymentSuccessful
-                ? ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Back',
-                style: TextStyle(fontSize: 18),
-              ),
-            )
-                : ElevatedButton(
-              onPressed: () async {
-                if (balance != null && amount != null) {
-                  if (amount! > 0 && balance! >= amount!) {
-                    bool success = await apiServices.PayByUser(amount, uniqueId, MachineId, CenterId);
-                    if (success) {
-                      setState(() {
-                        fetchBalance();
-                        paymentSuccessful = true;
-                      });
+              child: paymentSuccessful
+                  ? ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Back',
+                  style: TextStyle(fontSize: 18),
+                ),
+              )
+                  : ElevatedButton(
+                onPressed: () async {
+                  if (balance != null && amount != null) {
+                    if (amount! > 0 && balance! >= amount!) {
+                      bool success = await apiServices.PayByUser(amount, uniqueId, MachineCode, CenterId);
+                      if (success) {
+                        setState(() {
+                          fetchBalance();
+                          paymentSuccessful = true;
+                        });
+                      }
+                    } else {
+                      if (amount! <= 0) {
+                        Get.snackbar(
+                          'Invalid Amount',
+                          'Amount must be greater than zero for payment.',
+                        );
+                      } else {
+                        Get.snackbar(
+                          'Insufficient Balance',
+                          'Your balance is not sufficient for this payment.',
+                        );
+                      }
                     }
                   } else {
-                    if (amount! <= 0) {
-                      Get.snackbar(
-                        'Invalid Amount',
-                        'Amount must be greater than zero for payment.',
-                      );
-                    } else {
-                      Get.snackbar(
-                        'Insufficient Balance',
-                        'Your balance is not sufficient for this payment.',
-                      );
-                    }
+                    print('Balance or amount is null.');
                   }
-                } else {
-                  print('Balance or amount is null.');
-                }
-              },
-              child: const Text(
-                'Pay',
-                style: TextStyle(fontSize: 18),
-              ),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                  EdgeInsets.all(16.0),
+                },
+                child: const Text(
+                  'Pay',
+                  style: TextStyle(fontSize: 18),
                 ),
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                    EdgeInsets.all(16.0),
+                  ),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
                 ),
-              ),
-            )
+              )
 
 
           ),
@@ -236,16 +236,16 @@ class _PaymentState extends State<Payment> {
           },
           body: jsonEncode(<String, dynamic>{
             'userId': uniqueId,
-            'machinecode': machineId,
+            'machinecode': machineId.toString(),
           },
           ));
 
-          if (response.statusCode == 200) {
+      if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         final centerName = responseData['data']['center']['name'];
         final centerId = responseData['data']['center']['id'];
         final machineName = responseData['data']['machine']['name'];
-        final machineId = responseData['data']['machine']['id'];
+        final machineCode = responseData['data']['machine']['machineCode'];
         final rateValue = responseData['data']['rate']['rate'];
 
         setState(() {
@@ -253,13 +253,13 @@ class _PaymentState extends State<Payment> {
           CenterName = centerName;
           MachineName = machineName;
           CenterId = centerId;
-          MachineId = machineId;
+          MachineCode = machineCode;
         });
       } else {
-    print('Registration failed with status code ${response.statusCode}');
-    }
+        print('Registration failed with status code ${response.statusCode}');
+      }
     } catch (error) {
-    print('Registration failed with error: $error');
+      print('Registration failed with error: $error');
     }
   }
 }

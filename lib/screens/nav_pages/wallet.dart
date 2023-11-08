@@ -70,7 +70,7 @@ class _WalletState extends State<Wallet> {
                     width: 130,
                     child: GestureDetector(
                       onTap: () {
-                        Get.to(() => QrcodeGenerator(), fullscreenDialog: true, arguments: uniqueId);
+                        Get.to(() => Payment(), fullscreenDialog: true, arguments: uniqueId);
                       },
                       child: Container(
                         decoration: BoxDecoration(
