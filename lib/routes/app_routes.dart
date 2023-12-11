@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:scanato/screens/dashboard.dart';
 import 'package:scanato/screens/login.dart';
 import 'package:scanato/screens/nav_pages/homepage.dart';
+import 'package:scanato/screens/splash_screen.dart';
 
 import '../screens/add_admin.dart';
 import '../screens/register.dart';
@@ -10,7 +11,7 @@ class NyAppRouter {
   static final List<GetPage> routes = [
     GetPage(
       name: '/',
-      page: () => const MyLogin(),
+      page: () => const SplashScreen(),
     ),
     GetPage(
       name: '/home',

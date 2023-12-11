@@ -79,53 +79,60 @@ class _AdminListState extends State<AdminList> {
               height: 20,
             ),
             Container(
-              height: 500,
-              child: ListView.builder(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child:ListView.builder(
                 itemCount: (_filteredAdminModel?.length ?? 0),
                 itemBuilder: (BuildContext context, int index) {
                   final admin = _filteredAdminModel?[index];
-                  return Card(
-                    elevation: 9,
-                    child: ListTile(
-                      title: Text('Name: ${admin?.name}'),
-                      subtitle:
-                      Text('Email: ${admin?.email} | Mobile: ${admin?.mobile}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.edit,
-                              color: Colors.blue,
+
+                  // Check if name, email, and mobile are not empty
+                  if (admin?.name?.isNotEmpty == true &&
+                      admin?.email?.isNotEmpty == true &&
+                      admin?.mobile?.isNotEmpty == true) {
+                    return Card(
+                      elevation: 9,
+                      child: ListTile(
+                        title: Text('Name: ${admin?.name}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Email: ${admin?.email}'),
+                            Text('Mobile: ${admin?.mobile}'),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () {
+                                // Handle edit here
+                              },
                             ),
-                            onPressed: () {
-                              // Handle edit here
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.delete,
-                              color: Colors.red,
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {
+                                // Handle delete here
+                              },
                             ),
-                            onPressed: () {
-                              // Handle delete here
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  } else {
+                    // Return an empty container if any of the required fields is empty
+                    return Container();
+                  }
                 },
               ),
+
             ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     setState(() {
-            //       _currentPage++;
-            //     });
-            //   },
-            //   child: Text('Load More'),
-            // ),
           ],
         ),
       ),
@@ -194,29 +201,6 @@ class AdminSearchDelegate extends SearchDelegate<String> {
         return ListTile(
           title: Text('Name: ${admin.name}'),
           subtitle: Text('Email: ${admin.email} | Mobile: ${admin.mobile}'),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  color: Colors.blue,
-                ),
-                onPressed: () {
-                  // Handle edit here
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  // Handle delete here
-                },
-              ),
-            ],
-          ),
         );
       },
     );

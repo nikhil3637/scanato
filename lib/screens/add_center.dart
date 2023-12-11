@@ -1,11 +1,12 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:scanato/models/state_model.dart';
+import 'package:scanato/screens/center_list.dart';
 import 'package:scanato/server/apis.dart';
 import '../models/admin_model.dart';
+import '../models/centerlist_model.dart';
 import '../models/city_model.dart';
 
 class AddCenter extends StatefulWidget {
@@ -35,6 +36,7 @@ class _AddCenterState extends State<AddCenter> {
     getCityData();
     getAdminListData();
     getUniqueNo();
+
   }
 
   Future<void> getStateData() async {
@@ -57,6 +59,8 @@ class _AddCenterState extends State<AddCenter> {
       _adminModel = adminData;
     });
   }
+
+
 
   getUniqueNo(){
     final random = Random();
@@ -185,7 +189,36 @@ class _AddCenterState extends State<AddCenter> {
                 },
                 child: Text('Add Center'),
               ),
-
+              SizedBox(height: 40,),
+              GestureDetector(
+                onTap: () {
+                  Get.to(() => CenterListView(),fullscreenDialog: true);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(1),
+                        spreadRadius: 3,
+                        blurRadius: 5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.admin_panel_settings, size: 50),
+                        SizedBox(height: 10),
+                        Text('Center List'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

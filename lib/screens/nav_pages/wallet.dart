@@ -21,128 +21,131 @@ class _WalletState extends State<Wallet> {
     print('uniqueId=====on wallet =======$uniqueId');
     return Scaffold(
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Visibility(
-                  visible: widget.roleId == 1 || widget.roleId ==2,
-                  child: Container(
-                    height: 130,
-                    width: 130,
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.to(() => Recharge(roleId: widget.roleId,), fullscreenDialog: true, arguments: uniqueId);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(1),
-                              spreadRadius: 3,
-                              blurRadius: 5,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.wallet, size: 50),
-                              SizedBox(height: 10),
-                              Text('Recharge'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: widget.roleId ==4,
-                  child: Container(
-                    height: 130,
-                    width: 130,
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.to(() => Payment(), fullscreenDialog: true, arguments: uniqueId);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(1),
-                              spreadRadius: 3,
-                              blurRadius: 5,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.wallet, size: 50),
-                              SizedBox(height: 10),
-                              Text('Pay'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 130,
-                  width: 130,
-                  child: GestureDetector(
-                    onTap: () {
-                      Get.to(() => BalanceHistory(), fullscreenDialog: true, arguments: uniqueId);
-                    },
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              SizedBox(height: 20,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Visibility(
+                    visible: widget.roleId == 1 || widget.roleId ==2,
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(1),
-                            spreadRadius: 3,
-                            blurRadius: 5,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center, // Aligns content vertically
-                          crossAxisAlignment: CrossAxisAlignment.center, // Aligns content horizontally
-                          children: [
-                            Icon(Icons.wallet, size: 50),
-                            SizedBox(height: 10),
-                            Text(
-                              'Recharge History',
-                              style: TextStyle(
+                      height: 130,
+                      width: 130,
+                      child: GestureDetector(
+                        onTap: () {
+                          Get.to(() => Recharge(roleId: widget.roleId,), fullscreenDialog: true, arguments: uniqueId);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(1),
+                                spreadRadius: 3,
+                                blurRadius: 5,
+                                offset: const Offset(0, 5),
                               ),
-                              textAlign: TextAlign.center,
+                            ],
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            child: const Column(
+                              children: [
+                                Icon(Icons.wallet, size: 50),
+                                SizedBox(height: 10),
+                                Text('Recharge'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: widget.roleId ==4,
+                    child: Container(
+                      height: 130,
+                      width: 130,
+                      child: GestureDetector(
+                        onTap: () {
+                          Get.to(() => Payment(), fullscreenDialog: true, arguments: uniqueId);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(1),
+                                spreadRadius: 3,
+                                blurRadius: 5,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            child: const Column(
+                              children: [
+                                Icon(Icons.wallet, size: 50),
+                                SizedBox(height: 10),
+                                Text('Pay'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 130,
+                    width: 130,
+                    child: GestureDetector(
+                      onTap: () {
+                        Get.to(() => BalanceHistory(), fullscreenDialog: true, arguments: uniqueId);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(1),
+                              spreadRadius: 3,
+                              blurRadius: 5,
+                              offset: const Offset(0, 5),
                             ),
                           ],
                         ),
-                      )
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center, // Aligns content vertically
+                            crossAxisAlignment: CrossAxisAlignment.center, // Aligns content horizontally
+                            children: [
+                              Icon(Icons.wallet, size: 50),
+                              SizedBox(height: 10),
+                              Text(
+                                'Recharge History',
+                                style: TextStyle(
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
 
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         )
       )
     );

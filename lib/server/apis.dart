@@ -177,6 +177,7 @@ class ApiServices{
             'roleId': 1,
             'createdBy': uniqueId,
             'entrySource': 'App',
+            'referralCode': '$name$uniqueId',
             'isEmailVerified': isEmailVerified,
             'isMobileVerified': isMobileVerified,
           }));

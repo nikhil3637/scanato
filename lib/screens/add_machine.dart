@@ -4,6 +4,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:scanato/models/machinetype_model.dart';
 import 'package:scanato/models/makeid_list.dart';
 import 'package:scanato/models/modelid_model.dart';
+import 'package:scanato/screens/machine_list.dart';
 import 'package:scanato/server/apis.dart';
 
 class AddMachine extends StatefulWidget {
@@ -175,6 +176,36 @@ class _AddMachineState extends State<AddMachine> {
                   }
                 },
                 child: Text("Add Machine"),
+              ),
+              SizedBox(height: 40,),
+              GestureDetector(
+                onTap: () {
+                  Get.to(() => MachineListView(),fullscreenDialog: true);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(1),
+                        spreadRadius: 3,
+                        blurRadius: 5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.admin_panel_settings, size: 50),
+                        SizedBox(height: 10),
+                        Text('Machine List'),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
