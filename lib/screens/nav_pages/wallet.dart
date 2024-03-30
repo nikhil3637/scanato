@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:scanato/screens/auth.dart';
 import 'package:scanato/screens/pay.dart';
 import '../balance_history.dart';
 import '../recharge.dart';
@@ -68,8 +67,8 @@ class _WalletState extends State<Wallet> {
                   Visibility(
                     visible: widget.roleId ==4,
                     child: Container(
-                      height: 130,
-                      width: 130,
+                      height: 140,
+                      width: 140,
                       child: GestureDetector(
                         onTap: () {
                           Get.to(() => Payment(), fullscreenDialog: true, arguments: uniqueId);
@@ -102,8 +101,8 @@ class _WalletState extends State<Wallet> {
                     ),
                   ),
                   Container(
-                    height: 130,
-                    width: 130,
+                    height: 140,
+                    width: 140,
                     child: GestureDetector(
                       onTap: () {
                         Get.to(() => BalanceHistory(), fullscreenDialog: true, arguments: uniqueId);

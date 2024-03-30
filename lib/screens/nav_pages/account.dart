@@ -47,9 +47,10 @@ class _AccountState extends State<Account> {
                 color: Colors.blue,
               ),
               child: const CircleAvatar(
-                radius: 60,
+                radius: 40,
               ),
             ),
+            SizedBox(height: 20),
             Card(
               margin: EdgeInsets.symmetric(horizontal: 16),
               elevation: 4,

@@ -19,9 +19,22 @@ class _MyLoginState extends State<MyLogin> {
   final ApiServices apiServices = ApiServices();
   bool isLoading = false; // Track whether login request is in progress
 
-  Future<void> Remember() async {
+  Future<void> Remember(bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('remember', true);
+    await prefs.setBool('remember', value);
+    if (value) {
+      await prefs.setString('username', name.text);
+      await prefs.setString('password', password.text);
+    } else {
+      await prefs.remove('username');
+      await prefs.remove('password');
+    }
+  }
+
+
+  Future<bool> checkRemember() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('remember') ?? false;
   }
 
   void _loginUser() {
@@ -29,14 +42,15 @@ class _MyLoginState extends State<MyLogin> {
       isLoading = true; // Show the CircularProgressIndicator
     });
 
-    // Introduce a 2-second delay using Future.delayed
-    Future.delayed(Duration(seconds: 2), () {
-      apiServices.loginUser(name.text, password.text).then((result) {
-        // Handle the result of the login request
-
-        setState(() {
-          isLoading = false; // Hide the CircularProgressIndicator
-        });
+    apiServices.loginUser(name.text, password.text).then((result) {
+      // Handle the result of the login request
+      setState(() {
+        isLoading = false; // Hide the CircularProgressIndicator
+      });
+    }).catchError((error) {
+      // Handle login error here
+      setState(() {
+        isLoading = false; // Hide the CircularProgressIndicator
       });
     });
   }
@@ -50,13 +64,27 @@ class _MyLoginState extends State<MyLogin> {
   @override
   void initState() {
     super.initState();
+    // Check if user should be remembered and update the state accordingly
+    checkRemember().then((bool remembered) {
+      setState(() {
+        isChecked = remembered;
+      });
+      if (remembered) {
+        // If user should be remembered, automatically fill in the credentials
+        fillCredentials();
+      }
+    });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    name.dispose();
-    password.dispose();
+  void fillCredentials() {
+    // Retrieve saved credentials and fill in the text fields
+    final prefs = SharedPreferences.getInstance();
+    prefs.then((SharedPreferences prefs) {
+      setState(() {
+        name.text = prefs.getString('username') ?? '';
+        password.text = prefs.getString('password') ?? '';
+      });
+    });
   }
 
   @override
@@ -115,16 +143,25 @@ class _MyLoginState extends State<MyLogin> {
                               ),
                               obscureText: !isPasswordVisible,
                             ),
-
                             const SizedBox(
                               height: 20,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Sign in',
-                                  style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: isChecked,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          isChecked = value!;
+                                          Remember(value);
+                                        });
+                                      },
+                                    ),
+                                    Text('Remember me'),
+                                  ],
                                 ),
                                 CircleAvatar(
                                   radius: 30,

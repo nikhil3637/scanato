@@ -31,7 +31,7 @@ class _AddFamilyMemberState extends State<AddFamilyMember> {
         return;
       }
 
-      final response = await http.get(Uri.parse('http://124.123.76.123:88/api/User/GetUserListBymobile/${mobile}'));
+      final response = await http.get(Uri.parse('http://183.83.176.150:88/api/User/GetUserListBymobile/${mobile}'));
 
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);

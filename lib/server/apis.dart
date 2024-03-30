@@ -43,7 +43,7 @@ class ApiServices{
       }
 
       final response = await http.post(
-        Uri.parse('http://124.123.76.123:88/api/User/Login'),
+        Uri.parse('http://183.83.176.150:88/api/User/Login'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },
@@ -55,7 +55,7 @@ class ApiServices{
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print('response body = $responseData');
+        print('response login body = $responseData');
 
         // Rest of your code for successful login
         final prefs = await SharedPreferences.getInstance();
@@ -91,7 +91,7 @@ class ApiServices{
     print('Register password========$password');
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/User/Registration'),
+          Uri.parse('http://183.83.176.150:88/api/User/Registration'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -165,7 +165,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/User/Registration'),
+          Uri.parse('http://183.83.176.150:88/api/User/Registration'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -240,7 +240,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/Master/AddCenter'),
+          Uri.parse('http://183.83.176.150:88/api/Master/AddCenter'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -296,7 +296,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/Master/AddMachine'),
+          Uri.parse('http://183.83.176.150:88/api/Master/AddMachine'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -347,7 +347,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/Center/AddMachines'),
+          Uri.parse('http://183.83.176.150:88/api/Center/AddMachines'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -397,7 +397,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/wallet/walletrecharge'),
+          Uri.parse('http://183.83.176.150:88/api/wallet/walletrecharge'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -443,7 +443,6 @@ class ApiServices{
   Future<bool> PayByUser(amount,uniqueId,machineCode,centerId) async {
     print('rechargeAdmin=======$uniqueId');
     print('rechargeAdmin=======$amount');
-
     try {
       final response = await http.post(
           Uri.parse('https://vedantifosoft.com/api/Machine'),
@@ -496,7 +495,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/user/addfamilymember'),
+          Uri.parse('http://183.83.176.150:88/api/user/addfamilymember'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -552,7 +551,7 @@ class ApiServices{
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/master/addofferchart'),
+          Uri.parse('http://183.83.176.150:88/api/master/addofferchart'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -599,7 +598,7 @@ class ApiServices{
   }
 
   Future<List<StateModel>> fetchStateData() async {
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/Master/GetStateList'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/Master/GetStateList'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -617,7 +616,7 @@ class ApiServices{
   }
 
   Future<List<CityModel>> fetchCityData() async {
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/Master/GetDistrictList'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/Master/GetDistrictList'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -635,7 +634,7 @@ class ApiServices{
 
   Future<List<Welcome>> fetchAdminListData(id) async {
     print('fetchAdminListData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/User/GetUserListByRole/${id}'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/User/GetUserListByRole/${id}'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
@@ -653,7 +652,7 @@ class ApiServices{
   Future<List<AdminListByMobile>> fetchAdminDataByMobile( mobile) async {
     try {
       print('fetchAdminDataByMobile called');
-      final response = await http.get(Uri.parse('http://124.123.76.123:88/api/User/GetUserListBymobile/${mobile}'));
+      final response = await http.get(Uri.parse('http://183.83.176.150:88/api/User/GetUserListBymobile/${mobile}'));
 
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);
@@ -679,7 +678,7 @@ class ApiServices{
 
   Future<List<MachineType>> fetchMachineTypeListData() async {
     print('fetchMachineTypeListData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/master/getmachinetypelist'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/master/getmachinetypelist'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -696,7 +695,7 @@ class ApiServices{
 
   Future<List<Makeid>> fetchMakeidListData() async {
     print('fetchMakeidListData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/master/getmakelist'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/master/getmakelist'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -713,7 +712,7 @@ class ApiServices{
 
   Future<List<ModelId>> fetchModelListData() async {
     print('fetchModelListData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/master/getmodellist'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/master/getmodellist'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -730,7 +729,7 @@ class ApiServices{
 
   Future<List<MachineList>> fetchMachineListOnCenterData() async {
     print('fetchModelListData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/master/getmachinelist'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/master/getmachinelist'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -747,7 +746,7 @@ class ApiServices{
 
   Future<List<CenterList>> fetchCenterListData() async {
     print('fetchModelListData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/master/getcenterlist'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/master/getcenterlist'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -764,10 +763,11 @@ class ApiServices{
 
   Future<List<BalanceHis>> fetchBalanceHistoryData(uniqueId) async {
     print('fetchBalanceHistoryData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/wallet/getwalletdetails/${uniqueId}'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/wallet/getwalletdetails/${uniqueId}'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
+      print('responsedata of history ==============$responseData');
       List<BalanceHis> balancelist = responseData.map((stateData) {
         return BalanceHis.fromJson(stateData);
       }).toList();
@@ -781,7 +781,7 @@ class ApiServices{
 
   Future<List<OfferType>> fetchOfferTypelistData() async {
     print('fetchBalanceHistoryData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/master/getoffertypelist'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/master/getoffertypelist'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -798,7 +798,7 @@ class ApiServices{
 
   Future<List<AnalyticsReport>> fetchReportlistData(uniqueId) async {
     print('fetchReportlistData========called');
-    final response = await http.get(Uri.parse('http://124.123.76.123:88/api/dashboard/getdashboarddata/${uniqueId}'));
+    final response = await http.get(Uri.parse('http://183.83.176.150:88/api/dashboard/getdashboarddata/${uniqueId}'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body)['data'];
@@ -815,7 +815,7 @@ class ApiServices{
 
   Future<double?> fetchBalanceData(uniqueId) async {
     try {
-      final response = await http.get(Uri.parse('http://124.123.76.123:88/api/wallet/getwalletbalance/${uniqueId}'));
+      final response = await http.get(Uri.parse('http://183.83.176.150:88/api/wallet/getwalletbalance/${uniqueId}'));
       final decodedData = jsonDecode(response.body);
       final balance = decodedData['balance'];
       return balance;

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,6 +30,10 @@ class _PaymentState extends State<Payment> {
   String? CenterName;
   String? MachineName;
   bool paymentSuccessful = false;
+  late CameraController _cameraController;
+  late QRViewController _qrController;
+  double zoomValue = 10.0;
+
 
   @override
   void reassemble() {
@@ -39,6 +44,33 @@ class _PaymentState extends State<Payment> {
       controller!.resumeCamera();
     }
   }
+
+  Future<void> initializeCamera() async {
+    final cameras = await availableCameras();
+    final camera = cameras.first;
+
+    _cameraController = CameraController(
+      camera,
+      ResolutionPreset.medium,
+    );
+
+    _cameraController.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+
+      // Set autofocus controls
+      _cameraController.setFlashMode(FlashMode.torch); // or FlashMode.auto for automatic flash
+
+      // Zoom controls
+      _cameraController.setZoomLevel(zoomValue);
+      _cameraController.addListener(() {
+
+      });
+    });
+  }
+
 
   Future<void> fetchBalance() async {
     try {
@@ -56,6 +88,7 @@ class _PaymentState extends State<Payment> {
   void initState() {
     super.initState();
     fetchBalance();
+    initializeCamera();
   }
 
   @override
@@ -205,21 +238,37 @@ class _PaymentState extends State<Payment> {
     );
   }
 
+  Future<void> _onQRViewCreated(QRViewController controller) async {
+    _qrController = controller;
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
+    _qrController.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
         showResult = true;
-        controller.pauseCamera();
+        _qrController.pauseCamera();
         getPaymentDetails(result!.code, uniqueId);
       });
     });
+
+    if (_cameraController.value.isInitialized) {
+      await _cameraController.setFlashMode(FlashMode.torch); // or FlashMode.auto for automatic flash
+      _cameraController.setZoomLevel(zoomValue);
+      _cameraController.addListener(() {
+      });
+    }
+
+    await _qrController.flipCamera(); // Flip the camera for better autofocus
+
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    await _qrController.flipCamera(); // Flip the camera back to its original state
   }
+
 
   @override
   void dispose() {
+    _qrController.dispose();
+    _cameraController.dispose();
     controller?.dispose();
     super.dispose();
   }
@@ -229,7 +278,7 @@ class _PaymentState extends State<Payment> {
 
     try {
       final response = await http.post(
-          Uri.parse('http://124.123.76.123:88/api/Center/GetMachinePlan'),
+          Uri.parse('http://183.83.176.150:88/api/Center/GetMachinePlan'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },

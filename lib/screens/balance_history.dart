@@ -28,10 +28,11 @@ class _BalanceHistoryState extends State<BalanceHistory> {
   Future<void> getBalanceHistoryData(uniqueId) async {
     List<BalanceHis>? balanceData =
     await apiServices.fetchBalanceHistoryData(uniqueId);
+    print(balanceData);
     setState(() {
       // Filter out transactions with both dr and cr equal to zero
       _balanceHistoryModel = balanceData
-          ?.where((transaction) => transaction.dr > 0 || transaction.cr > 0)
+          .where((transaction) => transaction.dr > 0 || transaction.cr > 0)
           .toList();
     });
   }
@@ -59,25 +60,33 @@ class _BalanceHistoryState extends State<BalanceHistory> {
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: itemsToShow,
+              itemCount: _balanceHistoryModel!.length + 1, // Add 1 for the "Load More" button
               itemBuilder: (context, index) {
-                if (index == itemsToShow - 1) {
+                if (index == _balanceHistoryModel!.length) {
+                  // Render the "Load More" button
                   return Column(
                     children: [
-                      TransactionCard(transaction: _balanceHistoryModel![index]),
-                      if (itemsToShow < _balanceHistoryModel!.length)
+                      if (_balanceHistoryModel!.length < itemsToShow)
+                        CircularProgressIndicator(), // Display loading indicator until enough items are fetched
+                      if (_balanceHistoryModel!.length >= itemsToShow)
                         ElevatedButton(
                           onPressed: loadMoreItems,
                           child: Text('Load More'),
                         ),
                     ],
                   );
+                } else if (index < itemsToShow) {
+                  // Render the transaction card if within the visible range
+                  final transaction = _balanceHistoryModel![index];
+                  return TransactionCard(transaction: transaction);
+                } else {
+                  // Return an empty container for indexes beyond the visible range
+                  return Container();
                 }
-                final transaction = _balanceHistoryModel![index];
-                return TransactionCard(transaction: transaction);
               },
             ),
           ),
+
         ],
       )
           : const Center(
