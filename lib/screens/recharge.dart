@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http; // Import the http package
 import 'dart:convert';
+import '../constants/global_variable.dart';
 import '../models/adminbymob_model.dart';
 import '../server/apis.dart';
 
@@ -49,7 +50,7 @@ class _RechargeState extends State<Recharge> {
         return;
       }
 
-      final response = await http.get(Uri.parse('http://124.123.76.123:88/api/User/GetUserListBymobile/${mobile}'));
+      final response = await http.get(Uri.parse('${GlobalVariable.baseUrl}/User/GetUserListBymobile/${mobile}'));
 
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);

@@ -8,6 +8,8 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scanato/server/apis.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants/global_variable.dart';
+
 class Payment extends StatefulWidget {
   const Payment({Key? key}) : super(key: key);
 
@@ -27,12 +29,16 @@ class _PaymentState extends State<Payment> {
   int? amount;
   int? CenterId;
   String? MachineCode;
+  String? TimeToOn;
   String? CenterName;
   String? MachineName;
   bool paymentSuccessful = false;
   late CameraController _cameraController;
   late QRViewController _qrController;
   double zoomValue = 10.0;
+  List<dynamic>? rate;
+  List<dynamic>? offer;
+
 
 
   @override
@@ -66,7 +72,6 @@ class _PaymentState extends State<Payment> {
       // Zoom controls
       _cameraController.setZoomLevel(zoomValue);
       _cameraController.addListener(() {
-
       });
     });
   }
@@ -134,7 +139,7 @@ class _PaymentState extends State<Payment> {
 
   Widget _buildPaymentDetails() {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.45,
+      height: MediaQuery.of(context).size.height * 0.55,
       alignment: Alignment.center,
       padding: EdgeInsets.all(16),
       child: Column(
@@ -142,88 +147,126 @@ class _PaymentState extends State<Payment> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Balance: ${balance}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: Colors.black),textAlign: TextAlign.left,),
-          SizedBox(height: 20),
           _buildCard("Center Name:", CenterName ?? "N/A"),
           _buildCard("Machine Name:", MachineName ?? "N/A"),
-          _buildCard("Amount:", "${amount ?? 0}"),
           SizedBox(height: 20),
           Center(
-              child: paymentSuccessful
-                  ? ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  'Back',
-                  style: TextStyle(fontSize: 18),
-                ),
-              )
-                  : ElevatedButton(
-                onPressed: () async {
-                  if (balance != null && amount != null) {
-                    if (amount! > 0 && balance! >= amount!) {
-                      bool success = await apiServices.PayByUser(amount, uniqueId, MachineCode, CenterId);
-                      if (success) {
+            child: Column(
+              children: [
+                Text('Select Payment ', style: TextStyle(fontSize: 18)),
+                Column(
+                  children: List.generate(rate!.length, (index) {
+                    return RadioListTile(
+                      title: Text('Amount: ${rate?[index]["rate"]}'),
+                      value: rate?[index]["rate"],
+                      groupValue: amount,
+                      onChanged: (value) {
                         setState(() {
-                          fetchBalance();
-                          paymentSuccessful = true;
+                          amount = value;
+                          TimeToOn = rate?[index]['timeToOn'].toString();
                         });
-                      }
-                    } else {
-                      if (amount! <= 0) {
-                        Get.snackbar(
-                          'Invalid Amount',
-                          'Amount must be greater than zero for payment.',
-                        );
-                      } else {
-                        Get.snackbar(
-                          'Insufficient Balance',
-                          'Your balance is not sufficient for this payment.',
-                        );
-                      }
+                      },
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+          // Display offer details
+          _buildCard("Offer:", offer != null && offer!.isNotEmpty ? "Discount: ${offer?[0]["discount"]}" : "No Offer Available"),
+
+          // Display the amount to pay
+          Text('Amount to Pay: ${calculateAmountToPay()}'),
+          SizedBox(height: 20),
+          Center(
+            child: paymentSuccessful
+                ? ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Back',
+                style: TextStyle(fontSize: 18),
+              ),
+            )
+                : ElevatedButton(
+              onPressed: () async {
+                 amount = calculateAmountToPay();
+                if (balance != null && amount != null) {
+                  if (amount! > 0 && balance! >= amount!) {
+                    bool success = await apiServices.PayByUser(amount.toString(), uniqueId.toString(), MachineCode.toString(), CenterId.toString(), TimeToOn.toString());
+                    if (success) {
+                      setState(() {
+                        fetchBalance();
+                        paymentSuccessful = true;
+                      });
                     }
                   } else {
-                    print('Balance or amount is null.');
+                    if (amount! <= 0) {
+                      Get.snackbar(
+                        'Invalid Amount',
+                        'Amount must be greater than zero for payment.',
+                      );
+                    } else {
+                      Get.snackbar(
+                        'Insufficient Balance',
+                        'Your balance is not sufficient for this payment.',
+                      );
+                    }
                   }
-                },
-                child: const Text(
-                  'Pay',
-                  style: TextStyle(fontSize: 18),
+                } else {
+                  print('Balance or amount is null.');
+                }
+              },
+              child: const Text(
+                'Pay',
+                style: TextStyle(fontSize: 18),
+              ),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                  EdgeInsets.all(6.0),
                 ),
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    EdgeInsets.all(16.0),
-                  ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-              )
-
-
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
+// Method to calculate the final amount to pay
+   calculateAmountToPay() {
+    if (amount != null && offer != null && offer!.isNotEmpty) {
+      num finalAmount = amount! - offer?[0]["discount"];
+      return finalAmount.toInt();
+    } else if (amount != null) {
+      return amount;
+    } else {
+      return "N/A";
+    }
+  }
+
+
   Widget _buildCard(String title, String content) {
     return Card(
       elevation: 6,
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: EdgeInsets.symmetric(vertical: 6),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -275,10 +318,11 @@ class _PaymentState extends State<Payment> {
 
   Future<void> getPaymentDetails(machineId, uniqueId) async {
     print('Register uniqueId========$uniqueId');
+    print('payment reslult cpde========$machineId');
 
     try {
       final response = await http.post(
-          Uri.parse('http://183.83.176.150:88/api/Center/GetMachinePlan'),
+          Uri.parse('${GlobalVariable.baseUrl}/Center/GetMachinePlan'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },
@@ -290,18 +334,22 @@ class _PaymentState extends State<Payment> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        print('Response data of payment===========+#$responseData');
         final centerName = responseData['data']['center']['name'];
         final centerId = responseData['data']['center']['id'];
         final machineName = responseData['data']['machine']['name'];
         final machineCode = responseData['data']['machine']['machineCode'];
-        final rateValue = responseData['data']['rate']['rate'];
+        final rateValue = responseData['data']['rate'];
+        final offers = responseData['data']['offer'];
 
         setState(() {
-          amount = rateValue;
+          rate = rateValue;
+          offer = offers;
           CenterName = centerName;
           MachineName = machineName;
           CenterId = centerId;
           MachineCode = machineCode;
+
         });
       } else {
         print('Registration failed with status code ${response.statusCode}');

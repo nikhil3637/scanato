@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class GlobalVariable {
+  // Base URL
+  static const String baseUrl = 'http://103.71.99.113:88/api';
+
   // COLORS
   static const appBarGradient = LinearGradient(
     colors: [
@@ -11,7 +14,7 @@ class GlobalVariable {
     stops: [0.5, 1.0],
   );
 
-  static  Color secondaryColor = Colors.blueGrey.shade700;
+  static Color secondaryColor = Colors.blueGrey.shade700;
   static const backgroundColor = Colors.white;
   static const Color greyBackgroundCOlor = Color(0xffebecee);
   static var selectedNavBarColor = Colors.cyan[800]!;
