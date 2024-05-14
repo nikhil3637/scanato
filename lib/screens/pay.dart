@@ -57,7 +57,7 @@
 
       _cameraController = CameraController(
         camera,
-        ResolutionPreset.medium,
+        ResolutionPreset.high,
       );
 
       _cameraController.initialize().then((_) {
@@ -65,9 +65,6 @@
           return;
         }
         setState(() {});
-
-        // Set autofocus controls
-        _cameraController.setFlashMode(FlashMode.torch); // or FlashMode.auto for automatic flash
 
         // Zoom controls
         _cameraController.setZoomLevel(zoomValue);
@@ -172,8 +169,7 @@
                   ),
                   ],
                 ),
-              ),
-              // Display offer details
+              ),_buildCard("Time to On:", TimeToOn ?? "N/A"),
               _buildCard("Offer:", offer != null && offer!.isNotEmpty ? "Discount: ${offer?[0]["discount"]}" : "No Offer Available"),
 
               // Display the amount to pay
@@ -322,19 +318,6 @@
       print('Register uniqueId========$uniqueId');
       print('payment reslult cpde========$machineId');
 
-      // Get.defaultDialog(
-      //   title: 'before api',
-      //   middleText: ' result : ${machineId} , id : ${uniqueId}',
-      //   actions: [
-      //     TextButton(
-      //       onPressed: () {
-      //         Get.back();
-      //       },
-      //       child: Text('OK'),
-      //     ),
-      //   ],
-      // );
-
       try {
         final response = await http.post(
             Uri.parse('${GlobalVariable.baseUrl}/Center/GetMachinePlan'),
@@ -347,19 +330,6 @@
             },
             ));
 
-        // Get.defaultDialog(
-        //   title: 'check after post before  200',
-        //   middleText: ' Successful ',
-        //   actions: [
-        //     TextButton(
-        //       onPressed: () {
-        //         Get.back();
-        //       },
-        //       child: Text('OK'),
-        //     ),
-        //   ],
-        // );
-
         if (response.statusCode == 200) {
           final responseData = jsonDecode(response.body);
           print('Response data of payment===========+#$responseData');
@@ -370,18 +340,6 @@
           final rateValue = responseData['data']['rate'];
           final offers = responseData['data']['offer'];
 
-          // Get.defaultDialog(
-          //   title: 'check at getpayment details',
-          //   middleText: '${responseData},centerName: ${centerName},centerId:${centerId},machineName${machineName},machineCode :${machineCode},rateValue${rateValue},offers:${offers}',
-          //   actions: [
-          //     TextButton(
-          //       onPressed: () {
-          //         Get.back();
-          //       },
-          //       child: Text('OK'),
-          //     ),
-          //   ],
-          // );
 
           setState(() {
             rate = rateValue;
