@@ -51,27 +51,27 @@
       }
     }
 
-    Future<void> initializeCamera() async {
-      final cameras = await availableCameras();
-      final camera = cameras.first;
-
-      _cameraController = CameraController(
-        camera,
-        ResolutionPreset.high,
-      );
-
-      _cameraController.initialize().then((_) {
-        if (!mounted) {
-          return;
-        }
-        setState(() {});
-
-        // Zoom controls
-        _cameraController.setZoomLevel(zoomValue);
-        _cameraController.addListener(() {
-        });
-      });
-    }
+    // Future<void> initializeCamera() async {
+    //   final cameras = await availableCameras();
+    //   final camera = cameras.first;
+    //
+    //   _cameraController = CameraController(
+    //     camera,
+    //     ResolutionPreset.high,
+    //   );
+    //
+    //   _cameraController.initialize().then((_) {
+    //     if (!mounted) {
+    //       return;
+    //     }
+    //     setState(() {});
+    //
+    //     // Zoom controls
+    //     _cameraController.setZoomLevel(zoomValue);
+    //     _cameraController.addListener(() {
+    //     });
+    //   });
+    // }
 
 
     Future<void> fetchBalance() async {
@@ -90,7 +90,7 @@
     void initState() {
       super.initState();
       fetchBalance();
-      initializeCamera();
+      // initializeCamera();
     }
 
     @override

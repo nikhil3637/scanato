@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:scanato/screens/pay.dart';
 import '../balance_history.dart';
 import '../recharge.dart';
@@ -14,6 +15,34 @@ class Wallet extends StatefulWidget {
 }
 
 class _WalletState extends State<Wallet> {
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVersion();
+  }
+
+  Future<void> _fetchVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = packageInfo.version;
+    });
+    _showVersionDialog();
+  }
+
+  void _showVersionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('App Version'),
+          content: Text('Version: $_version'),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final uniqueId = widget.uniqueId;
