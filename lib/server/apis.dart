@@ -66,14 +66,14 @@ class ApiServices{
         await prefs.setString('name', responseData['name']);
         await prefs.setString('email', responseData['email']);
         await prefs.setString('mobile', responseData['mobile']);
-        print('responseData login page========$responseData');
+        await prefs.setString('referralCode', responseData['referralCode']);
+
         final role = responseData['role'];
         final uniqueId = responseData['id'];
         print('uniqueId = $uniqueId');
         print('Role = $role');
         final roleId = role['id'];
         print('roleId = $roleId');
-
         Get.offNamed('/home');
       } else {
         print('Login failed with status code ${response.statusCode}');

@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
       phoneNumber = prefs.getString('mobile')!;
       roleName = prefs.getString('rolename')!;
       isloggedIn = prefs.getBool('remember');
-      print('referral=============$referral');
+      referral = prefs.getString('referralCode')!;
     });
   }
 
