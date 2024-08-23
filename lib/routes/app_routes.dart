@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:scanato/screens/dashboard.dart';
-import 'package:scanato/screens/login.dart';
 import 'package:scanato/screens/nav_pages/homepage.dart';
 import 'package:scanato/screens/splash_screen.dart';
 

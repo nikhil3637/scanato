@@ -8,6 +8,8 @@ import 'package:scanato/screens/nav_pages/home.dart';
 import 'package:scanato/screens/nav_pages/wallet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../server/apis.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -40,7 +42,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -54,16 +55,17 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     print('roleid ======on homepage through SP========$roleId');
     print('uniqueId ======on homepage through SP========$uniqueId');
     return Scaffold(
       key: scaffoldKey, // Add a key to the scaffold
-      appBar:AppBar(
+      appBar: AppBar(
         backgroundColor: Colors.white,
-       elevation: 0,
-       centerTitle: true,
+        elevation: 0,
+        centerTitle: true,
         iconTheme: IconThemeData(color: Colors.black),
         title: Image.asset(
           'assets/images/robologo.jpg', // Replace with the path to your logo image
@@ -92,14 +94,27 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.home),
               title: const Text('Home'),
               onTap: () {
-
+                Navigator.of(context).pop(); // Close the drawer
+                setState(() {
+                  pageIndex = 0; // Set the selected page index to Home
+                });
+                pageController.jumpToPage(pageIndex); // Navigate to Home page
               },
             ),
             ListTile(
               leading: Icon(Icons.wallet),
-              title: const Text('Wallet'),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Wallet'),
+                ],
+              ),
               onTap: () {
-                // Handle Wallet onTap
+                Navigator.of(context).pop(); // Close the drawer
+                setState(() {
+                  pageIndex = 1; // Set the selected page index to Wallet
+                });
+                pageController.jumpToPage(pageIndex); // Navigate to Wallet page
               },
             ),
             Visibility(
@@ -108,23 +123,26 @@ class _HomePageState extends State<HomePage> {
                 leading: Icon(Icons.dashboard),
                 title: const Text('Dashboard'),
                 onTap: () {
-                  Get.toNamed('/dashboard',arguments: uniqueId );
+                  Navigator.of(context).pop(); // Close the drawer
+                  Get.toNamed('/dashboard', arguments: uniqueId);
                 },
               ),
             ),
             Visibility(
-              visible: roleId == 4, // Only show if roleId is 2
+              visible: roleId == 4, // Only show if roleId is 4
               child: ListTile(
                 leading: Icon(Icons.family_restroom),
                 title: const Text('Family Member'),
                 onTap: () {
-                  Get.to( () => AddFamilyMember(),fullscreenDialog: true,arguments: uniqueId);
+                  Navigator.of(context).pop(); // Close the drawer
+                  Get.to(() => AddFamilyMember(), fullscreenDialog: true, arguments: uniqueId);
                 },
               ),
             ),
           ],
         ),
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         onTap: (index) {
           setState(() {
@@ -156,12 +174,17 @@ class _HomePageState extends State<HomePage> {
           });
         },
         children: <Widget>[
-          MyHome(uniqueId: uniqueId,),
-          Wallet(uniqueId: uniqueId, roleId: roleId,),
-          Account(email: email.toString(), phoneNumber: phoneNumber.toString(), roleName: roleName.toString(), referral: referral.toString(),)
+          MyHome(uniqueId: uniqueId),
+          Wallet(uniqueId: uniqueId, roleId: roleId),
+          Account(
+            email: email.toString(),
+            phoneNumber: phoneNumber.toString(),
+            roleName: roleName.toString(),
+            referral: referral.toString(),
+          ),
         ],
       ),
-
     );
   }
+
 }

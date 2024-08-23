@@ -1,12 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import '../constants/global_variable.dart';
-import '../models/adminbymob_model.dart';
 import '../server/apis.dart';
 
 class AddFamilyMember extends StatefulWidget {
@@ -17,48 +13,104 @@ class AddFamilyMember extends StatefulWidget {
 }
 
 class _AddFamilyMemberState extends State<AddFamilyMember> {
-  String? userNameForVerification; // Added to store the user's name for verification
-  int? selectedAdmin;
-  double? balance;
+  String? userNameForVerification;
   final ApiServices apiServices = ApiServices();
   final uniqueId = Get.arguments;
   final TextEditingController mobileController = TextEditingController();
+  final FocusNode mobileFocusNode = FocusNode();
 
+  @override
+  void initState() {
+    super.initState();
 
-  Future<void> fetchUserNameByMobile(String mobile) async {
-    try {
-      // Check if the mobile number input is empty, and if it is, return without making the API call
-      if (mobile.isEmpty) {
-        return;
+    mobileController.addListener(() {
+      if (mobileController.text.length == 10) {
+        fetchUserNameAndShowDialog(mobileController.text);
+        mobileFocusNode.unfocus();
       }
+    });
+  }
 
-      final response = await http.get(Uri.parse('${GlobalVariable.baseUrl}/User/GetUserListBymobile/${mobile}'));
+  Future<void> fetchUserNameAndShowDialog(String mobile) async {
+    try {
+      if (mobile.isEmpty) return;
+
+      final response = await http.get(Uri.parse('${GlobalVariable.baseUrl}/User/GetUserListBymobile/$mobile'));
+
+      print('API Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);
 
-        if (responseData is List && responseData.isNotEmpty) {
-          // If the response is a list and not empty, update the userNameForVerification
+        print('Parsed Response Data: $responseData');
+
+        if (responseData['isSuccess'] == true) {
+          final userName = responseData['name'];
+          final userId = responseData['id'];
+
           setState(() {
-            userNameForVerification = responseData[0]['name'];
+            userNameForVerification = userName;
           });
+
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('User Name: $userName'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      addMember(userId);
+                      Navigator.of(context).pop(); // Close the dialog after adding the member
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
         } else {
-          // If no user was found for the mobile number, reset userNameForVerification
           setState(() {
             userNameForVerification = null;
           });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No user found for this mobile number'),
+            ),
+          );
         }
       } else {
-        throw Exception('Failed to load admin data');
+        throw Exception('Failed to load user data');
       }
     } catch (e) {
-      print('Error fetching admin data: $e');
-      throw Exception('Failed to load admin data: $e');
+      print('Error fetching user data: $e');
+      throw Exception('Failed to load user data: $e');
     }
   }
 
+  Future<void> addMember(int adminId) async {
+    bool success = await apiServices.addFamilyMember(adminId, uniqueId);
+    if (success) {
+      mobileController.clear();
+      setState(() {
+        userNameForVerification = null;
+      });
+    }
+  }
 
-
+  @override
+  void dispose() {
+    mobileController.dispose();
+    mobileFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,71 +124,30 @@ class _AddFamilyMemberState extends State<AddFamilyMember> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            SizedBox(height: 20,),
-            // Mobile Number Input
+            const SizedBox(height: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Enter Mobile Number:'),
+                const Text('Enter Mobile Number:'),
                 Row(
                   children: [
                     Flexible(
-                      child: TypeAheadFormField<AdminListByMobile>(
-                        textFieldConfiguration: TextFieldConfiguration(
-                          controller: mobileController,
-                          decoration: InputDecoration(
-                            labelText: "Mobile Number",
-                          ),
+                      child: TextField(
+                        controller: mobileController,
+                        focusNode: mobileFocusNode,
+                        decoration: const InputDecoration(
+                          labelText: "Mobile Number",
                         ),
-                        suggestionsCallback: (pattern) async {
-                          // Implement your logic to fetch suggestions based on the mobile number pattern
-                          return await apiServices.fetchAdminDataByMobile(pattern);
-                        },
-                        itemBuilder: (context, suggestion) {
-                          return ListTile(
-                            title: Text(suggestion.mobile),
-                          );
-                        },
-                        onSuggestionSelected: (suggestion) {
-                          // Handle the selection of a user from the suggestions
-                          setState(() {
-                            mobileController.text = suggestion.mobile;
-                            selectedAdmin = suggestion.id;
-                            userNameForVerification = suggestion.name;
-                          });
-                        },
-                        noItemsFoundBuilder: (context) {
-                          return SizedBox.shrink();
-                        },
+                        keyboardType: TextInputType.phone,
+                        maxLength: 10,
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
-            // Display the user's name for verification
-            if (userNameForVerification != null)
-              Text(
-                'User Name : $userNameForVerification',
-                style: TextStyle(fontSize: 16),
-              ),
-            SizedBox(height: 10,),
-            ElevatedButton(
-              onPressed: () async {
-                bool success = await apiServices.addFamilyMember( selectedAdmin, uniqueId);
-                if (success) {
-                  // Clear text fields and reset dropdown selections on success
-                  mobileController.clear();
-                  setState(() {
-                    selectedAdmin = null;
-                    userNameForVerification = null;
-                  });
-                }
-              },
-              child: Text('Add Member'),
             ),
           ],
         ),

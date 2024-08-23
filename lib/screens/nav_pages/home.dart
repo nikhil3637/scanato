@@ -63,45 +63,6 @@ class _MyHomeState extends State<MyHome> {
         ),
       ),
     );
-
-    // cards.add(
-    //   Card(
-    //     color: Colors.orange.shade200,
-    //     shadowColor: Colors.greenAccent,
-    //     elevation: 6,
-    //     margin: EdgeInsets.all(16.0),
-    //     child: ListTile(
-    //       leading: Icon(Icons.person),
-    //       title: Text('Users: ${reportData.totalNoOfUsers}'),
-    //     ),
-    //   ),
-    // );
-    //
-    // cards.add(
-    //   Card(
-    //     color: Colors.yellow.shade200,
-    //     shadowColor: Colors.greenAccent,
-    //     elevation: 6,
-    //     margin: EdgeInsets.all(16.0),
-    //     child: ListTile(
-    //       leading: Icon(Icons.center_focus_strong),
-    //       title: Text('Centers: ${reportData.totalNoOfCenter}'),
-    //     ),
-    //   ),
-    // );
-    //
-    // cards.add(
-    //   Card(
-    //     color: Colors.purple.shade200,
-    //     shadowColor: Colors.greenAccent,
-    //     elevation: 6,
-    //     margin: EdgeInsets.all(16.0),
-    //     child: ListTile(
-    //       leading: Icon(Icons.airline_seat_legroom_extra_outlined),
-    //       title: Text('Machines: ${reportData.totalNoOfMachine}'),
-    //     ),
-    //   ),
-    // );
     return cards;
   }
 }

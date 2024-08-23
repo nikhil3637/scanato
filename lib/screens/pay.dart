@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_scankit/flutter_scankit.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:scanato/server/apis.dart';
+import 'package:http/http.dart' as http;
 
 import '../constants/global_variable.dart';
 
@@ -16,10 +18,9 @@ class Payment extends StatefulWidget {
 }
 
 class _PaymentState extends State<Payment> {
-  final ScanKitController _scankitController = ScanKitController();
-  ScanResult? result;
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   bool showResult = false;
-  TextEditingController amountController = TextEditingController();
+  Barcode? scannedBarcode;
   final uniqueId = Get.arguments;
   ApiServices apiServices = ApiServices();
   double? balance;
@@ -30,41 +31,103 @@ class _PaymentState extends State<Payment> {
   String? CenterName;
   String? MachineName;
   bool paymentSuccessful = false;
+  late CameraController _cameraController;
+  late BarcodeScanner _barcodeScanner;
+  double zoomValue = 10.0;
   late List<dynamic> rate = [];
   List<dynamic>? offer;
+  bool isScanning = false;
+  bool isFlashOn = false;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchBalance();
-
-    // Listen to ScanKit results
-    _scankitController.onResult.listen((ScanResult result) {
-      setState(() {
-        this.result = result;
-        showResult = true;
-        // Process the result and fetch payment details
-        getPaymentDetails(result.originalValue, uniqueId);
-        _scankitController.pauseContinuouslyScan(); // Stop scanning after a result is found
-      });
-    });
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
-  }
 
   Future<void> fetchBalance() async {
     try {
       final balanceData = await apiServices.fetchBalanceData(uniqueId);
       setState(() {
         balance = balanceData;
+        print('balance==============%$balance');
       });
     } catch (e) {
       print('Error fetching balance: $e');
     }
   }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchBalance();
+    initializeCamera();
+    _barcodeScanner = BarcodeScanner();
+  }
+
+  Future<void> initializeCamera() async {
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
+
+    _cameraController = CameraController(
+      firstCamera,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
+    await _cameraController.initialize();
+    // await _cameraController.setZoomLevel(zoomValue);
+    await _cameraController.setFlashMode(FlashMode.off);
+
+    setState(() {});
+    startBarcodeScanning();
+  }
+
+  Future<void> startBarcodeScanning() async {
+    if (isScanning) return;
+    isScanning = true;
+
+    _cameraController.startImageStream((image) async {
+      if (!mounted) return;
+
+      try {
+        final image = await _cameraController.takePicture();
+        final inputImage = InputImage.fromFilePath(image.path);
+        final barcodes = await _barcodeScanner.processImage(inputImage);
+
+        if (barcodes.isNotEmpty) {
+          final barcode = barcodes.first;
+
+          if (scannedBarcode == null) {
+            setState(() {
+              scannedBarcode = barcode;
+            });
+
+            await getPaymentDetails(scannedBarcode?.displayValue, uniqueId);
+
+            _cameraController.stopImageStream();
+            isScanning = false;
+          }
+
+          return;
+        }
+      } catch (e) {
+        print('Error during barcode scanning: $e');
+      }
+    });
+  }
+
+  void toggleFlashlight() async {
+    try {
+      if (isFlashOn) {
+        await _cameraController.setFlashMode(FlashMode.off);
+      } else {
+        await _cameraController.setFlashMode(FlashMode.torch);
+      }
+      setState(() {
+        isFlashOn = !isFlashOn;
+      });
+    } catch (e) {
+      print('Error toggling flashlight: $e');
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +142,15 @@ class _PaymentState extends State<Payment> {
           height: 100,
           width: 100,
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFlashOn ? Icons.flash_on : Icons.flash_off,
+              color: isFlashOn ? Colors.yellow : Colors.grey,
+            ),
+            onPressed: toggleFlashlight,
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -89,77 +161,14 @@ class _PaymentState extends State<Payment> {
               flex: 5,
               child: showResult
                   ? _buildPaymentDetails() // Show payment details
-                  : Stack(
-                children: [
-                  ScanKitWidget(
-                    controller: _scankitController,
-                    continuouslyScan: true,
-                    boundingBox: Rect.fromLTWH(
-                      MediaQuery.of(context).size.width / 2 - 100,
-                      MediaQuery.of(context).size.height / 2 - 100,
-                      200,
-                      200,
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            icon: Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _scankitController.switchLight();
-                            },
-                            icon: Icon(
-                              Icons.lightbulb_outline_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _scankitController.pickPhoto();
-                            },
-                            icon: Icon(
-                              Icons.picture_in_picture_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.orangeAccent, width: 2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                  : CameraPreview(_cameraController), // Show camera preview
             ),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildPaymentDetails() {
     return SingleChildScrollView(
@@ -168,16 +177,16 @@ class _PaymentState extends State<Payment> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Balance: ${balance ?? "Loading..."}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30, color: Colors.black), textAlign: TextAlign.left,),
+            Text('Balance: ${balance}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: Colors.black),textAlign: TextAlign.left,),
             _buildCard("Center Name:", CenterName ?? "N/A"),
             _buildCard("Machine Name:", MachineName ?? "N/A"),
             SizedBox(height: 20),
             Center(
               child: Column(
                 children: [
-                  Text('Select Payment', style: TextStyle(fontSize: 18)),
+                  Text('Select Payment ', style: TextStyle(fontSize: 18)),
                   Container(
-                    height: rate.length * 70.0, // Adjust the height dynamically
+                    height:  rate.length * 70.0 , // Adjust the height dynamically
                     child: Column(
                       children: List.generate(rate.length, (index) {
                         return RadioListTile(
@@ -196,9 +205,10 @@ class _PaymentState extends State<Payment> {
                   ),
                 ],
               ),
-            ),
-            _buildCard("Time to On:", TimeToOn ?? "N/A"),
+            ),_buildCard("Time to On:", TimeToOn ?? "N/A"),
             _buildCard("Offer:", offer != null && offer!.isNotEmpty ? "Discount: ${offer?[0]["discount"]}" : "No Offer Available"),
+
+            // Display the amount to pay
             Text('Amount to Pay: ${calculateAmountToPay()}'),
             SizedBox(height: 20),
             Center(
@@ -268,7 +278,7 @@ class _PaymentState extends State<Payment> {
   // Method to calculate the final amount to pay
   calculateAmountToPay() {
     if (amount != null && offer != null && offer!.isNotEmpty) {
-      num finalAmount = amount! - offer![0]["discount"];
+      num finalAmount = amount! - offer?[0]["discount"];
       return finalAmount.toInt();
     } else if (amount != null) {
       return amount;
@@ -276,6 +286,7 @@ class _PaymentState extends State<Payment> {
       return "N/A";
     }
   }
+
 
   Widget _buildCard(String title, String content) {
     return Card(
@@ -304,21 +315,27 @@ class _PaymentState extends State<Payment> {
     );
   }
 
-  Future<void> getPaymentDetails(String machineId, String uniqueId) async {
-    print('Register uniqueId========$uniqueId');
-    print('payment result code========$machineId');
+
+
+  @override
+  void dispose() {
+    _cameraController.dispose();
+    super.dispose();
+  }
+
+  Future<void> getPaymentDetails(machineId, uniqueId) async {
 
     try {
       final response = await http.post(
-        Uri.parse('${GlobalVariable.baseUrl}/Center/GetMachinePlan'),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'userId': uniqueId,
-          'machinecode': machineId.toString(),
-        }),
-      );
+          Uri.parse('${GlobalVariable.baseUrl}/Center/GetMachinePlan'),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(<String, dynamic>{
+            'userId': uniqueId,
+            'machinecode': machineId.toString(),
+          },
+          ));
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -330,6 +347,7 @@ class _PaymentState extends State<Payment> {
         final rateValue = responseData['data']['rate'];
         final offers = responseData['data']['offer'];
 
+
         setState(() {
           rate = rateValue;
           offer = offers;
@@ -337,18 +355,13 @@ class _PaymentState extends State<Payment> {
           MachineName = machineName;
           CenterId = centerId;
           MachineCode = machineCode;
+          showResult = true;
         });
       } else {
-        print('Request failed with status code ${response.statusCode}');
+        print('Registration failed with status code ${response.statusCode}');
       }
     } catch (error) {
-      print('Request failed with error: $error');
+      print('Registration failed with error: $error');
     }
-  }
-
-  @override
-  void dispose() {
-    _scankitController.dispose();
-    super.dispose();
   }
 }

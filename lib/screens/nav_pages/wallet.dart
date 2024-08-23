@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:scanato/screens/pay.dart';
+import '../../server/apis.dart';
 import '../balance_history.dart';
 import '../recharge.dart';
 
@@ -16,11 +17,14 @@ class Wallet extends StatefulWidget {
 
 class _WalletState extends State<Wallet> {
   String _version = '';
+  ApiServices apiServices = ApiServices();
+  double? balance;
 
   @override
   void initState() {
     super.initState();
     _fetchVersion();
+    fetchBalance();
   }
 
   Future<void> _fetchVersion() async {
@@ -28,37 +32,60 @@ class _WalletState extends State<Wallet> {
     setState(() {
       _version = packageInfo.version;
     });
-    _showVersionDialog();
+    _showVersionSnackbar();
   }
 
-  void _showVersionDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('App Version'),
-          content: Text('Version: $_version'),
-        );
-      },
-    );
+
+  Future<void> fetchBalance() async {
+    try {
+      final balanceData = await apiServices.fetchBalanceData(widget.uniqueId);
+      setState(() {
+        balance = balanceData;
+        print('balance==============%$balance');
+      });
+    } catch (e) {
+      print('Error fetching balance: $e');
+    }
   }
+
+  void _showVersionSnackbar() {
+    final snackBar = SnackBar(
+      content: Text('App Version: $_version'),
+      duration: Duration(seconds: 3), // Snackbar will be visible for 3 seconds
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final uniqueId = widget.uniqueId;
     print('uniqueId=====on wallet =======$uniqueId');
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
             children: [
-              SizedBox(height: 20,),
+              SizedBox(height: 20),
+              // Display the balance
+              balance != null
+                  ? Text(
+                'Balance: ${balance!.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+                  : CircularProgressIndicator(), // Show loading indicator if balance is null
+              SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Visibility(
-                    visible: widget.roleId == 1 || widget.roleId ==2,
+                    visible: widget.roleId == 1 || widget.roleId == 2,
                     child: Container(
                       height: 130,
                       width: 130,
@@ -94,7 +121,7 @@ class _WalletState extends State<Wallet> {
                     ),
                   ),
                   Visibility(
-                    visible: widget.roleId ==4,
+                    visible: widget.roleId == 4,
                     child: Container(
                       height: 140,
                       width: 140,
@@ -159,14 +186,12 @@ class _WalletState extends State<Wallet> {
                               SizedBox(height: 10),
                               Text(
                                 'Recharge History',
-                                style: TextStyle(
-                                ),
+                                style: TextStyle(),
                                 textAlign: TextAlign.center,
                               ),
                             ],
                           ),
-                        )
-
+                        ),
                       ),
                     ),
                   ),
@@ -174,8 +199,9 @@ class _WalletState extends State<Wallet> {
               ),
             ],
           ),
-        )
-      )
+        ),
+      ),
     );
   }
 }
+
