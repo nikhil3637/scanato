@@ -8,6 +8,7 @@ import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart
 import 'package:scanato/server/apis.dart';
 import 'package:http/http.dart' as http;
 
+import '../common_widgets/background_widget.dart';
 import '../constants/global_variable.dart';
 
 class Payment extends StatefulWidget {
@@ -28,12 +29,12 @@ class _PaymentState extends State<Payment> {
   int? CenterId;
   String? MachineCode;
   String? TimeToOn;
+  String? PlanName;
   String? CenterName;
   String? MachineName;
   bool paymentSuccessful = false;
   late CameraController _cameraController;
   late BarcodeScanner _barcodeScanner;
-  double zoomValue = 10.0;
   late List<dynamic> rate = [];
   List<dynamic>? offer;
   bool isScanning = false;
@@ -131,39 +132,41 @@ class _PaymentState extends State<Payment> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.black),
-        title: Image.asset(
-          'assets/images/robologo.jpg',
-          height: 100,
-          width: 100,
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              isFlashOn ? Icons.flash_on : Icons.flash_off,
-              color: isFlashOn ? Colors.yellow : Colors.grey,
-            ),
-            onPressed: toggleFlashlight,
+    return GradientBackground(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          iconTheme: IconThemeData(color: Colors.black),
+          title: Image.asset(
+            'assets/images/robologo.jpg',
+            height: 100,
+            width: 100,
           ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              flex: 5,
-              child: showResult
-                  ? _buildPaymentDetails() // Show payment details
-                  : CameraPreview(_cameraController), // Show camera preview
+          actions: [
+            IconButton(
+              icon: Icon(
+                isFlashOn ? Icons.flash_on : Icons.flash_off,
+                color: isFlashOn ? Colors.yellow : Colors.grey,
+              ),
+              onPressed: toggleFlashlight,
             ),
           ],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                flex: 5,
+                child: showResult
+                    ? _buildPaymentDetails() // Show payment details
+                    : CameraPreview(_cameraController), // Show camera preview
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -177,39 +180,31 @@ class _PaymentState extends State<Payment> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Balance: ${balance}',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: Colors.black),textAlign: TextAlign.left,),
+            // Displaying Center and Machine Name as Cards
+            Text(
+              'Balance: ${balance ?? 'N/A'}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 30,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.left,
+            ),
             _buildCard("Center Name:", CenterName ?? "N/A"),
             _buildCard("Machine Name:", MachineName ?? "N/A"),
             SizedBox(height: 20),
-            Center(
-              child: Column(
-                children: [
-                  Text('Select Payment ', style: TextStyle(fontSize: 18)),
-                  Container(
-                    height:  rate.length * 70.0 , // Adjust the height dynamically
-                    child: Column(
-                      children: List.generate(rate.length, (index) {
-                        return RadioListTile(
-                          title: Text('Amount: ${rate[index]["rate"]}'),
-                          value: rate[index]["rate"],
-                          groupValue: amount,
-                          onChanged: (value) {
-                            setState(() {
-                              amount = value;
-                              TimeToOn = rate[index]['timeToOn'].toString();
-                            });
-                          },
-                        );
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ),_buildCard("Time to On:", TimeToOn ?? "N/A"),
-            _buildCard("Offer:", offer != null && offer!.isNotEmpty ? "Discount: ${offer?[0]["discount"]}" : "No Offer Available"),
 
+            // Display Table with Amount, Package Name, Time to On, and Radio buttons
+            _buildRateTable(),
+
+            SizedBox(height: 30,),
             // Display the amount to pay
-            Text('Amount to Pay: ${calculateAmountToPay()}'),
+            Text('Amount to Pay: ${calculateAmountToPay()}',
+              style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),),
             SizedBox(height: 20),
             Center(
               child: paymentSuccessful
@@ -223,41 +218,16 @@ class _PaymentState extends State<Payment> {
                 ),
               )
                   : ElevatedButton(
-                onPressed: () async {
-                  amount = calculateAmountToPay();
-                  if (balance != null && amount != null) {
-                    if (amount! > 0 && balance! >= amount!) {
-                      bool success = await apiServices.PayByUser(amount.toString(), uniqueId.toString(), MachineCode.toString(), CenterId.toString(), TimeToOn.toString());
-                      if (success) {
-                        setState(() {
-                          fetchBalance();
-                          paymentSuccessful = true;
-                        });
-                      }
-                    } else {
-                      if (amount! <= 0) {
-                        Get.snackbar(
-                          'Invalid Amount',
-                          'Amount must be greater than zero for payment.',
-                        );
-                      } else {
-                        Get.snackbar(
-                          'Insufficient Balance',
-                          'Your balance is not sufficient for this payment.',
-                        );
-                      }
-                    }
-                  } else {
-                    print('Balance or amount is null.');
-                  }
-                },
+                onPressed: amount != null ? handlePayment : null,
                 child: const Text(
                   'Pay',
                   style: TextStyle(fontSize: 18),
                 ),
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                  backgroundColor:
+                  MaterialStateProperty.all<Color>(Colors.blue),
+                  foregroundColor:
+                  MaterialStateProperty.all<Color>(Colors.white),
                   padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
                     EdgeInsets.all(6.0),
                   ),
@@ -275,15 +245,119 @@ class _PaymentState extends State<Payment> {
     );
   }
 
-  // Method to calculate the final amount to pay
-  calculateAmountToPay() {
-    if (amount != null && offer != null && offer!.isNotEmpty) {
-      num finalAmount = amount! - offer?[0]["discount"];
-      return finalAmount.toInt();
-    } else if (amount != null) {
-      return amount;
+// Method to create a table with Amount, Package Name, Time to On, Offer, and Radio buttons
+  Widget _buildRateTable() {
+    return Table(
+      border: TableBorder.all(color: Colors.grey, width: 1),
+      columnWidths: {
+        0: FlexColumnWidth(1),
+        1: FlexColumnWidth(1),
+        2: FlexColumnWidth(1),
+        3: FlexColumnWidth(1), // For Offer column
+        4: FixedColumnWidth(50), // For radio button column
+      },
+      children: [
+        // Table Header
+        TableRow(
+          decoration: BoxDecoration(color: Colors.grey[200]),
+          children: [
+            _buildTableCell('Plan Name', isHeader: true),
+            _buildTableCell('Time to On', isHeader: true),
+            _buildTableCell('Amount', isHeader: true),
+            _buildTableCell('Offer', isHeader: true), // New Offer Header
+            _buildTableCell('', isHeader: true), // Empty header for radio button
+          ],
+        ),
+        // Table Rows for each rate item with Offer and Radio button
+        ...rate.asMap().entries.map((entry) {
+          int index = entry.key;
+          dynamic item = entry.value;
+          return TableRow(
+            children: [
+              _buildTableCell(item["planName"] ?? 'N/A'),
+              _buildTableCell(item["timeToOn"].toString()),
+              _buildTableCell(item["rate"].toString()),
+              _buildTableCell(
+                item["offer"] != null && item["offer"].isNotEmpty
+                    ? "Discount: ${item["offer"]["discount"]}"
+                    : "No Offer",
+              ), // Display offer details or default text
+              _buildRadioButtonCell(index, item),
+            ],
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+
+// Helper method to create table cells with optional header styling
+  Widget _buildTableCell(String text, {bool isHeader = false}) {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+          fontSize: isHeader ? 14 : 12,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+// Helper method to create a radio button cell
+  Widget _buildRadioButtonCell(int index, dynamic item) {
+    return Radio(
+      value: item["rate"],
+      groupValue: amount,
+      onChanged: (value) {
+        setState(() {
+          amount = value; // Update amount based on selected package
+          TimeToOn = rate[index]['timeToOn'].toString(); // Update TimeToOn based on selected package
+          PlanName = rate[index]['planName'].toString();
+        });
+      },
+    );
+  }
+
+// Payment handler method
+  Future<void> handlePayment() async {
+    if (amount == null) return; // Ensure an amount is selected
+    amount = calculateAmountToPay();
+    if (balance != null && amount != null) {
+      if (amount! > 0 && balance! >= amount!) {
+        try {
+          bool success = await apiServices.PayByUser(
+            amount.toString(),
+            uniqueId.toString(),
+            MachineCode.toString(),
+            CenterId.toString(),
+            TimeToOn.toString(),
+            PlanName.toString()
+          );
+          if (success) {
+            setState(() {
+              fetchBalance();
+              paymentSuccessful = true;
+            });
+          }
+        } catch (error) {
+          Get.snackbar(
+            'Payment Error',
+            'An error occurred during the payment process.',
+          );
+        }
+      } else {
+        Get.snackbar(
+          'Insufficient Balance',
+          amount! <= 0
+              ? 'Amount must be greater than zero for payment.'
+              : 'Your balance is not sufficient for this payment.',
+        );
+      }
     } else {
-      return "N/A";
+      print('Balance or amount is null.');
     }
   }
 
@@ -316,6 +390,19 @@ class _PaymentState extends State<Payment> {
   }
 
 
+
+
+  // Method to calculate the final amount to pay
+  calculateAmountToPay() {
+    if (amount != null && offer != null && offer!.isNotEmpty) {
+      num finalAmount = amount! - offer?[0]["discount"];
+      return finalAmount.toInt();
+    } else if (amount != null) {
+      return amount;
+    } else {
+      return "N/A";
+    }
+  }
 
   @override
   void dispose() {

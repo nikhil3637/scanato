@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../common_widgets/background_widget.dart';
 import '../../models/report_model.dart';
 import '../../server/apis.dart';
+import '../family_member_list.dart';
+import '../referal_members.dart';
 
 class MyHome extends StatefulWidget {
+  final int roleId;
   final int uniqueId;
-  const MyHome({Key? key, required this.uniqueId}) : super(key: key);
+  const MyHome({Key? key, required this.uniqueId, required this.roleId}) : super(key: key);
 
   @override
   State<MyHome> createState() => _MyHomeState();
@@ -32,37 +36,96 @@ class _MyHomeState extends State<MyHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          if (_analyticsReportModel != null && _analyticsReportModel!.isNotEmpty)
-            Column(
-              children: _buildCards(_analyticsReportModel![0]),
+      body: GradientBackground(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                _buildGridMenu(widget.uniqueId),
+              ],
             ),
-          if (_analyticsReportModel == null || _analyticsReportModel!.isEmpty)
-            Center(
-              child: Text('No data available'),
-            ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildCards(AnalyticsReport reportData) {
-    List<Widget> cards = [];
-
-    cards.add(
-      Card(
-        color: Colors.green.shade200,
-        shadowColor: Colors.greenAccent,
-        elevation: 6,
-        margin: EdgeInsets.all(16.0),
-        child: ListTile(
-          leading: Icon(Icons.currency_rupee),
-          title: Text('Collection: ${reportData.rechargeCollection}'),
+          ),
         ),
       ),
     );
-    return cards;
   }
-}
+
+
+  Widget _buildGridMenu(int uniqueId) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 20,
+      mainAxisSpacing: 20,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        if (widget.roleId == 4)
+          _buildTile(
+            icon: Icons.group_rounded,
+            label: 'Referral Members',
+            onTap: () {
+              Get.to(() => ReferalMembers(),
+                  fullscreenDialog: true, arguments: uniqueId);
+            },
+          ),
+
+        if (widget.roleId == 4)
+          _buildTile(
+            icon: Icons.family_restroom,
+            label: 'Family Member List',
+            onTap: () {
+              Get.to(() => FamilyMemberList(),
+                  fullscreenDialog: true, arguments: uniqueId);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [Colors.purple.shade100, Colors.blue.shade100],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 50, color: Colors.purple.shade600),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  }

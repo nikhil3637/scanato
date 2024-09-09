@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:scanato/constants/global_variable.dart';
 import 'package:scanato/screens/add_family_member.dart';
+import 'package:scanato/screens/family_member_list.dart';
 import 'package:scanato/screens/nav_pages/account.dart';
 import 'package:scanato/screens/nav_pages/home.dart';
 import 'package:scanato/screens/nav_pages/wallet.dart';
@@ -174,7 +175,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
         children: <Widget>[
-          MyHome(uniqueId: uniqueId),
+          MyHome(uniqueId: uniqueId,  roleId: roleId),
           Wallet(uniqueId: uniqueId, roleId: roleId),
           Account(
             email: email.toString(),

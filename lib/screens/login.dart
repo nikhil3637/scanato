@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:scanato/screens/register.dart';
 import 'package:scanato/server/apis.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../common_widgets/custom_textfield.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class _MyLoginState extends State<MyLogin> {
   final TextEditingController name = TextEditingController();
   final TextEditingController password = TextEditingController();
   final ApiServices apiServices = ApiServices();
-  bool isLoading = false; // Track whether login request is in progress
+  bool isLoading = false;
 
   Future<void> Remember(bool value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -30,7 +31,6 @@ class _MyLoginState extends State<MyLogin> {
       await prefs.remove('password');
     }
   }
-
 
   Future<bool> checkRemember() async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,6 +49,20 @@ class _MyLoginState extends State<MyLogin> {
       });
     }).catchError((error) {
       // Handle login error here
+
+      Get.defaultDialog(
+        title: 'Error',
+        middleText: 'Mobile number or Password is incorrect',
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+
       setState(() {
         isLoading = false; // Hide the CircularProgressIndicator
       });
@@ -115,7 +129,22 @@ class _MyLoginState extends State<MyLogin> {
                         margin: EdgeInsets.only(left: 35, right: 35),
                         child: Column(
                           children: [
-                            CustomTextField(controller: name, hintText: 'Mobile',),
+                            TextField(
+                              controller: name,
+                              decoration: InputDecoration(
+                                hintText: 'Mobile',
+                                border: const OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                enabledBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
                             const SizedBox(
                               height: 30,
                             ),
