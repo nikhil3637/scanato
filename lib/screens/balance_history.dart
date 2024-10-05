@@ -108,33 +108,27 @@ class TransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if both dr and cr are greater than zero
-    if (transaction.dr > 0 || transaction.cr > 0) {
-      return Card(
-        margin: EdgeInsets.all(10),
-        child: ListTile(
-          title: Text(
-            'Transaction No: ${transaction.txNo}',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Transaction Date: ${transaction.txDate.toString()}', style: TextStyle(color: Colors.black)),
-              if (transaction.dr > 0) Text('Debit: ${transaction.dr.toString()}', style: TextStyle(color: Colors.black)),
-              if (transaction.cr > 0) Text('Credit: ${transaction.cr.toString()}', style: TextStyle(color: Colors.black)),
-              Text(
-                'Transaction By: ${transaction.txBy.name.toString().split('.').last}',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
+    return  Card(
+      margin: EdgeInsets.all(10),
+      child: ListTile(
+        title: Text(
+          'Transaction No: ${transaction.txNo}',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-      );
-    } else {
-      // Return an empty container for transactions with both dr and cr equal to zero
-      return Container();
-    }
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Transaction Date: ${transaction.txDate.toString()}', style: TextStyle(color: Colors.black)),
+             Text('Debit: ${transaction.dr.toString()}', style: TextStyle(color: Colors.black)),
+             Text('Credit: ${transaction.cr.toString()}', style: TextStyle(color: Colors.black)),
+            Text(
+              'Transaction By: ${transaction.txBy.name.toString().split('.').last}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

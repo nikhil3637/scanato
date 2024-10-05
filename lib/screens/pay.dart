@@ -40,6 +40,10 @@ class _PaymentState extends State<Payment> {
   bool isScanning = false;
   bool isFlashOn = false;
 
+  int? selectedOfferId; // To store the selected offer ID
+  num? selectedDiscount; // To store the selected discount
+
+
 
   Future<void> fetchBalance() async {
     try {
@@ -245,51 +249,113 @@ class _PaymentState extends State<Payment> {
     );
   }
 
-// Method to create a table with Amount, Package Name, Time to On, Offer, and Radio buttons
   Widget _buildRateTable() {
-    return Table(
-      border: TableBorder.all(color: Colors.grey, width: 1),
-      columnWidths: {
-        0: FlexColumnWidth(1),
-        1: FlexColumnWidth(1),
-        2: FlexColumnWidth(1),
-        3: FlexColumnWidth(1), // For Offer column
-        4: FixedColumnWidth(50), // For radio button column
-      },
+    return Column(
       children: [
-        // Table Header
-        TableRow(
-          decoration: BoxDecoration(color: Colors.grey[200]),
+        Table(
+          border: TableBorder.all(color: Colors.grey, width: 1),
+          columnWidths: {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+            2: FlexColumnWidth(1),
+            3: FixedColumnWidth(50), // For radio button column
+          },
           children: [
-            _buildTableCell('Plan Name', isHeader: true),
-            _buildTableCell('Time to On', isHeader: true),
-            _buildTableCell('Amount', isHeader: true),
-            _buildTableCell('Offer', isHeader: true), // New Offer Header
-            _buildTableCell('', isHeader: true), // Empty header for radio button
+            // Table Header
+            TableRow(
+              decoration: BoxDecoration(color: Colors.grey[200]),
+              children: [
+                _buildTableCell('Plan Name', isHeader: true),
+                _buildTableCell('Time to On', isHeader: true),
+                _buildTableCell('Amount', isHeader: true),
+                _buildTableCell('', isHeader: true), // Empty header for radio button
+              ],
+            ),
+            // Main Table Rows for each rate item without Offer column
+            ...rate.asMap().entries.map((entry) {
+              int index = entry.key;
+              dynamic item = entry.value;
+              return TableRow(
+                children: [
+                  _buildTableCell(item["planName"] ?? 'N/A'),
+                  _buildTableCell(item["timeToOn"].toString()),
+                  _buildTableCell(item["rate"].toString()),
+                  _buildRadioButtonCell(index, item),
+                ],
+              );
+            }).toList(),
           ],
         ),
-        // Table Rows for each rate item with Offer and Radio button
-        ...rate.asMap().entries.map((entry) {
-          int index = entry.key;
-          dynamic item = entry.value;
-          return TableRow(
-            children: [
-              _buildTableCell(item["planName"] ?? 'N/A'),
-              _buildTableCell(item["timeToOn"].toString()),
-              _buildTableCell(item["rate"].toString()),
-              _buildTableCell(
-                item["offer"] != null && item["offer"].isNotEmpty
-                    ? "Discount: ${item["offer"]["discount"]}"
-                    : "No Offer",
-              ), // Display offer details or default text
-              _buildRadioButtonCell(index, item),
-            ],
-          );
-        }).toList(),
+        _buildOfferTable(offer!),
       ],
     );
   }
 
+  // Helper method to create the offer table with radio buttons
+  Widget _buildOfferTable(List<dynamic> offers) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Table(
+        border: TableBorder.all(color: Colors.grey, width: 1),
+        columnWidths: {
+          0: FlexColumnWidth(1),
+          1: FlexColumnWidth(2), // Adjust width to show offer name
+          2: FixedColumnWidth(50), // For radio button column
+        },
+        children: [
+          // Offer Table Header
+          TableRow(
+            decoration: BoxDecoration(color: Colors.grey[200]),
+            children: [
+              _buildTableCell('Discount', isHeader: true),
+              _buildTableCell('Offer Name', isHeader: true),
+              _buildTableCell('', isHeader: true), // Empty header for radio button
+            ],
+          ),
+          // If no offers, display a row saying "No Offer Available"
+          if (offers.isEmpty)
+            TableRow(
+              children: [
+                _buildTableCell('No Offer Available', isHeader: false),
+                _buildTableCell('', isHeader: false), // Empty cell for offer name
+                _buildTableCell('', isHeader: false), // Empty cell for radio button
+              ],
+            )
+          else
+          // Offer Rows with radio button
+            ...offers.asMap().entries.map((entry) {
+              int index = entry.key;
+              dynamic item = entry.value;
+              final offerName = item["offer"]?["name"] ?? 'No Description';
+              final discount = item["discount"] != null ? '${item["discount"]}' : 'N/A';
+
+              return TableRow(
+                children: [
+                  _buildTableCell(discount, isHeader: false),
+                  _buildTableCell(offerName.isNotEmpty ? offerName : 'No Description', isHeader: false),
+                  _buildRadioButtonOfferCell(index, item), // Radio button for each offer
+                ],
+              );
+            }).toList(),
+        ],
+      ),
+    );
+  }
+
+// Helper method to create a radio button cell for the offer
+  Widget _buildRadioButtonOfferCell(int index, dynamic item) {
+    return Radio(
+      value: item["offer"]?["id"], // Use the offer's ID as the value
+      groupValue: selectedOfferId, // Store the selected offer ID
+      onChanged: (value) {
+        setState(() {
+          selectedOfferId = value; // Update the selected offer ID
+          selectedDiscount = item["discount"]; // Update the discount based on the selected offer
+          calculateAmountToPay(); // Recalculate the amount
+        });
+      },
+    );
+  }
 
 // Helper method to create table cells with optional header styling
   Widget _buildTableCell(String text, {bool isHeader = false}) {
@@ -323,23 +389,30 @@ class _PaymentState extends State<Payment> {
 
 // Payment handler method
   Future<void> handlePayment() async {
-    if (amount == null) return; // Ensure an amount is selected
-    amount = calculateAmountToPay();
+    if (amount == null) return;
     if (balance != null && amount != null) {
-      if (amount! > 0 && balance! >= amount!) {
+      if (balance! >= amount!) {
         try {
           bool success = await apiServices.PayByUser(
-            amount.toString(),
-            uniqueId.toString(),
-            MachineCode.toString(),
-            CenterId.toString(),
-            TimeToOn.toString(),
-            PlanName.toString()
+              amount.toString(),
+              uniqueId.toString(),
+              MachineCode.toString(),
+              CenterId.toString(),
+              TimeToOn.toString(),
+              PlanName.toString(),
+              selectedDiscount.toString()
           );
           if (success) {
             setState(() {
               fetchBalance();
               paymentSuccessful = true;
+
+              // Reset the selected package and offer after payment
+              amount = null;
+              selectedOfferId = null;
+              selectedDiscount = null;
+              TimeToOn = null;
+              PlanName = null;
             });
           }
         } catch (error) {
@@ -350,8 +423,8 @@ class _PaymentState extends State<Payment> {
         }
       } else {
         Get.snackbar(
-          'Insufficient Balance',
-          amount! <= 0
+          'Error',
+          balance! <= 0
               ? 'Amount must be greater than zero for payment.'
               : 'Your balance is not sufficient for this payment.',
         );
@@ -389,13 +462,16 @@ class _PaymentState extends State<Payment> {
     );
   }
 
-
-
-
   // Method to calculate the final amount to pay
   calculateAmountToPay() {
-    if (amount != null && offer != null && offer!.isNotEmpty) {
-      num finalAmount = amount! - offer?[0]["discount"];
+    if (amount != null && selectedDiscount != null) {
+      num finalAmount = amount! - selectedDiscount!;
+
+      // Ensure final amount is not less than zero
+      if (finalAmount < 0) {
+        finalAmount = 0;
+      }
+
       return finalAmount.toInt();
     } else if (amount != null) {
       return amount;
@@ -403,6 +479,8 @@ class _PaymentState extends State<Payment> {
       return "N/A";
     }
   }
+
+
 
   @override
   void dispose() {

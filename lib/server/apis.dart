@@ -441,7 +441,7 @@ class ApiServices{
     return false;
   }
 
-  Future<bool> PayByUser(amount,uniqueId,machineCode,centerId,timeToOn,PlanName) async {
+  Future<bool> PayByUser(amount,uniqueId,machineCode,centerId,timeToOn,PlanName,selectedDiscount) async {
     try {
       final response = await http.post(
           Uri.parse('https://vedantifosoft.com/api/Machine'),
@@ -454,7 +454,8 @@ class ApiServices{
             'amount' : amount,
             'UserId' : uniqueId,
             'TimeToOn' : timeToOn,
-            'planName' : PlanName
+            'planName' : PlanName,
+            'discount' : selectedDiscount
           }
           ));
 
