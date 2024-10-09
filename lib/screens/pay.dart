@@ -39,7 +39,7 @@ class _PaymentState extends State<Payment> {
   List<dynamic>? offer;
   bool isScanning = false;
   bool isFlashOn = false;
-
+  bool isCameraInitialized = false;
   int? selectedOfferId; // To store the selected offer ID
   num? selectedDiscount; // To store the selected discount
 
@@ -76,10 +76,11 @@ class _PaymentState extends State<Payment> {
     );
 
     await _cameraController.initialize();
-    // await _cameraController.setZoomLevel(zoomValue);
     await _cameraController.setFlashMode(FlashMode.off);
 
-    setState(() {});
+    setState(() {
+      isCameraInitialized = true; // Camera is now initialized
+    });
     startBarcodeScanning();
   }
 
@@ -167,7 +168,9 @@ class _PaymentState extends State<Payment> {
                 flex: 5,
                 child: showResult
                     ? _buildPaymentDetails() // Show payment details
-                    : CameraPreview(_cameraController), // Show camera preview
+                    : (isCameraInitialized // Check if camera is initialized
+                    ? CameraPreview(_cameraController) // Show camera preview
+                    : CircularProgressIndicator()), // Show loading spinner while initializing
               ),
             ],
           ),
@@ -175,6 +178,7 @@ class _PaymentState extends State<Payment> {
       ),
     );
   }
+
 
 
   Widget _buildPaymentDetails() {
